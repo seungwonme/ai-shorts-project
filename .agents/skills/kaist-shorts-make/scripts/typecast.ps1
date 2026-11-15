@@ -70,16 +70,8 @@ if ($SetupKey) {
     if ($cand -match '\s' -or $cand.Length -lt 16 -or $cand.Length -gt 200) { Fail "복사된 내용이 API 키처럼 보이지 않습니다. 키 전체만 복사했는지 확인해 주세요. (복사한 내용은 화면에 보여 주지 않습니다.)" }
     Say "키가 맞는지 Typecast에 확인하는 중..."
     $voices = Get-Voices $cand
-    New-Item -ItemType Directory -Force -Path $keyDir | Out-Null
-    Write-Utf8 $keyFile $cand
-    # 내 계정(내 컴퓨터 사용자)만 읽을 수 있게 한다
-    try {
-        if ($isWin) {
-            [void](Invoke-Tool "icacls.exe" @($keyDir, "/inheritance:r", "/grant:r", ($env:USERNAME + ":(OI)(CI)F")) $null)
-        } else {
-            [void](Invoke-Tool "chmod" @("700", $keyDir) $null); [void](Invoke-Tool "chmod" @("600", $keyFile) $null)
-        }
-    } catch { Say "주의: 키 파일의 접근 권한을 제한하지 못했습니다. 이 컴퓨터를 다른 사람과 함께 쓴다면 알려 주세요." }
+    # 내 계정(내 컴퓨터 사용자)만 읽을 수 있게 먼저 제한한 뒤에 키를 쓴다 (제한에 실패하면 저장하지 않는다)
+    Save-SecretFile $keyDir $keyFile $cand
     try { Set-Clipboard -Value " " } catch { }
     Say ("저장했습니다. 이 키로 쓸 수 있는 목소리가 {0}개 보입니다. (복사해 둔 내용은 지웠습니다.)" -f $voices.Count)
     Say "키 파일: $keyFile (프로젝트 폴더 밖, 화면에 출력하지 않음)"

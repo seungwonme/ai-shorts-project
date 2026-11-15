@@ -428,6 +428,46 @@ if ($script:LOGO -and -not (Test-Path -LiteralPath $script:LOGO)) { Fail "로고
 
 $segs = @($spec.segments)
 foreach ($seg in $segs) { Add-Member -InputObject $seg -NotePropertyName abs -NotePropertyValue (Resolve-Input $seg.src) -Force }
+
+# 웹 검색(Tavily)으로 찾은 사진은 사람이 원래 페이지에서 권리를 확인해 sources.json 의 web_images 에
+# rights_status "확인됨"으로 기록된 것만 쓴다. 같은 내용의 사본(이름을 바꾼 파일)이나 web-NN 파일이 "확인됨"이 아니면 여기서 멈춘다.
+$blockedPhotos = @()
+$byHash = @{}
+$matsRoot = Join-Path $projectRoot "재료"
+if (Test-Path -LiteralPath $matsRoot) {
+    foreach ($sf in @(Get-ChildItem -LiteralPath $matsRoot -Recurse -Filter "sources.json" -ErrorAction SilentlyContinue)) {
+        try { $sj = Get-Content -LiteralPath $sf.FullName -Raw -Encoding UTF8 | ConvertFrom-Json } catch { continue }
+        if (-not $sj.PSObject.Properties["web_images"] -or -not $sj.web_images) { continue }
+        foreach ($en in @($sj.web_images)) {
+            $okRights = ([string](Get-Opt $en "rights_status" "") -eq "확인됨")
+            $shaVal = [string](Get-Opt $en "sha256" "")
+            if ($shaVal -and (-not $okRights -or -not $byHash.ContainsKey($shaVal))) { $byHash[$shaVal] = $okRights }
+        }
+    }
+}
+foreach ($seg in $segs) {
+    if ($seg.type -ne "image") { continue }
+    $why = $null
+    $fileHash = (Get-FileHash -LiteralPath $seg.abs -Algorithm SHA256).Hash.ToLower()
+    if ($byHash.ContainsKey($fileHash) -and -not $byHash[$fileHash]) { $why = "권리 확인 전" }
+    if (-not $why -and (Split-Path -Leaf $seg.abs) -match '^web-\d+\.(jpg|jpeg|png|gif|webp)$') {
+        $sjPath = Join-Path (Split-Path -Parent $seg.abs) "sources.json"
+        $found = $false
+        if (Test-Path -LiteralPath $sjPath) {
+            try { $sj2 = Get-Content -LiteralPath $sjPath -Raw -Encoding UTF8 | ConvertFrom-Json } catch { $sj2 = $null }
+            if ($sj2 -and $sj2.PSObject.Properties["web_images"]) {
+                foreach ($en in @($sj2.web_images)) {
+                    if (([string]$en.file) -eq (Split-Path -Leaf $seg.abs)) { $found = $true; if ([string](Get-Opt $en "rights_status" "") -ne "확인됨") { $why = "권리 확인 전" } }
+                }
+            }
+        }
+        if (-not $found) { $why = "출처 기록 없음" }
+    }
+    if ($why) { $blockedPhotos += ("{0} ({1})" -f $seg.src, $why) }
+}
+if ($blockedPhotos.Count -gt 0) {
+    Fail ("쓸 권리가 확인되지 않은 웹 사진이 들어 있어 영상을 만들지 않습니다.`n  " + ($blockedPhotos -join "`n  ") + "`n각 사진의 원래 페이지를 열어 쓸 권리를 확인한 뒤, 확인했다고 말해 주세요. 확인하지 않은 사진은 spec.json에서 빼야 합니다.")
+}
 $audio = Get-Opt $spec "audio" ([pscustomobject]@{ mode = "original" })
 if ((Get-Opt $audio "mode" "original") -eq "narration") { Add-Member -InputObject $audio -NotePropertyName abs -NotePropertyValue (Resolve-Input $audio.file) -Force }
 $sfx = @(Get-Opt $spec "sfx" @())

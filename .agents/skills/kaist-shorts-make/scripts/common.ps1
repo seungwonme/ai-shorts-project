@@ -81,3 +81,36 @@ function Safe-Name([string]$s, [int]$max) {
     if ($t.Length -gt $max) { $t = $t.Substring(0, $max) }
     return $t
 }
+
+# 비밀 값(API 키)을 내 계정만 읽을 수 있는 파일에 저장한다. 순서가 중요하다:
+# 폴더 권한 제한 -> 빈 파일 만들기 -> 파일 권한 제한 -> 그 다음에야 값을 쓴다.
+# 권한 제한이 하나라도 실패하면 파일을 지우고 멈춘다(값은 쓰지 않는다).
+function Save-SecretFile([string]$dir, [string]$file, [string]$value) {
+    $win = ($env:OS -eq "Windows_NT")
+    $failMsg = "키 파일을 내 계정만 읽도록 제한하지 못해 저장하지 않았습니다. 이 컴퓨터의 보안 설정을 확인해 주세요."
+    New-Item -ItemType Directory -Force -Path $dir | Out-Null
+    try {
+        if ($win) {
+            $grant = ($env:USERNAME + ":(OI)(CI)F")
+            $r = Invoke-Tool "icacls.exe" @($dir, "/inheritance:r", "/grant:r", $grant) $null
+            if ($r.Code -ne 0) { throw "icacls dir $($r.Code)" }
+        } else {
+            $r = Invoke-Tool "chmod" @("700", $dir) $null
+            if ($r.Code -ne 0) { throw "chmod dir $($r.Code)" }
+        }
+        # 빈 파일을 먼저 만든다 (값은 아직 쓰지 않는다)
+        [IO.File]::WriteAllBytes($file, (New-Object byte[] 0))
+        if ($win) {
+            $grantF = ($env:USERNAME + ":F")
+            $r = Invoke-Tool "icacls.exe" @($file, "/inheritance:r", "/grant:r", $grantF) $null
+            if ($r.Code -ne 0) { throw "icacls file $($r.Code)" }
+        } else {
+            $r = Invoke-Tool "chmod" @("600", $file) $null
+            if ($r.Code -ne 0) { throw "chmod file $($r.Code)" }
+        }
+    } catch {
+        try { if (Test-Path -LiteralPath $file) { Remove-Item -LiteralPath $file -Force } } catch { }
+        Fail $failMsg
+    }
+    Write-Utf8 $file $value
+}
