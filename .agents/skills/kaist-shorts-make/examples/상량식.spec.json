@@ -1,0 +1,90 @@
+{
+  "_설명": "형식 참고용 예시 2 (뉴스 기사로 만들기). 순서: collect-article.ps1 -Url https://news.kaist.ac.kr/news/html/news/?mode=V&mng_no=69110 로 재료/기사-69110/ 를 모읍니다. article.md의 사실만으로 대본을 쓰고 사람이 승인한 뒤 typecast.ps1로 결과/예시-상량식/narration/ 을 만듭니다. 사진 길이는 narration.json의 줄별 시각에, 자막은 narration.json의 captions에 맞췄습니다. 이 예시는 3줄짜리 짧은 대본입니다.",
+  "output": "결과/예시-상량식/shorts.mp4",
+  "title": [
+    {
+      "text": "한옥 국제교류관",
+      "color": "white"
+    },
+    {
+      "text": "상량식을 열었습니다",
+      "color": "teal"
+    }
+  ],
+  "bottom_text": "↓ 자세한 소식은 KAIST 뉴스",
+  "segments": [
+    {
+      "type": "image",
+      "src": "재료/기사-69110/img-01.jpg",
+      "duration": 4.657,
+      "push_in": 0.06
+    },
+    {
+      "type": "image",
+      "src": "재료/기사-69110/img-02.jpg",
+      "duration": 6.02,
+      "push_in": 0.06,
+      "transition": "fade",
+      "transition_duration": 0.3
+    },
+    {
+      "type": "image",
+      "src": "재료/기사-69110/img-03.jpg",
+      "duration": 4.226,
+      "push_in": 0.06,
+      "transition": "fade",
+      "transition_duration": 0.3
+    }
+  ],
+  "audio": {
+    "mode": "narration",
+    "file": "결과/예시-상량식/narration/narration.wav",
+    "narration_volume": 1.0
+  },
+  "captions": [
+    {
+      "start": 0.15,
+      "end": 1.79,
+      "text": "KAIST가 11월 3일,"
+    },
+    {
+      "start": 1.79,
+      "end": 3.44,
+      "text": "한옥 국제교류관의 상량식을"
+    },
+    {
+      "start": 3.44,
+      "end": 4.26,
+      "text": "열었습니다."
+    },
+    {
+      "start": 4.46,
+      "end": 6.25,
+      "text": "국제교류관은 이영희 기부자의"
+    },
+    {
+      "start": 6.25,
+      "end": 7.77,
+      "text": "기부금 20억 원과 풍산의"
+    },
+    {
+      "start": 7.77,
+      "end": 9.98,
+      "text": "기부금 10억 원으로 짓고 있습니다."
+    },
+    {
+      "start": 10.18,
+      "end": 12.13,
+      "text": "참석자들은 축문이 담긴 마룻대를"
+    },
+    {
+      "start": 12.13,
+      "end": 13.95,
+      "text": "올리며 완공을 기원했습니다."
+    }
+  ],
+  "loudness": {
+    "target": -19,
+    "true_peak": -1.5
+  }
+}

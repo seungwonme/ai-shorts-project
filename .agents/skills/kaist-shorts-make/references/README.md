@@ -1,0 +1,1 @@
+`TEMPLATE.md` is a copy of the measured KAIST layout (measured 2026-11-15 from the official shorts `IyGoQWBCanQ` and `NYiwcEkz4as`). The font path inside it refers to the author's Mac; in this project the font is `../assets/GmarketSansBold.otf`. Reference frame images are not included.

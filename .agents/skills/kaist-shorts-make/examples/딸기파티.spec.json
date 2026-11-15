@@ -1,0 +1,46 @@
+{
+  "_설명": "형식 참고용 예시 1 (유튜브 영상 구간 이어 붙이기). 먼저 collect-video.ps1로 https://www.youtube.com/watch?v=i-jQHQcNdWI 를 모으면 재료/i-jQHQcNdWI/video.mp4 가 생깁니다. 구간(in, out)은 transcript.txt를 읽고 고릅니다. 효과음은 넣지 않았습니다.",
+  "output": "결과/예시-딸기파티/shorts.mp4",
+  "title": [
+    {
+      "text": "20초 안에 읽어라",
+      "color": "white"
+    },
+    {
+      "text": "딸기 잰말놀이",
+      "color": "teal"
+    }
+  ],
+  "bottom_text": "↓ 풀영상은 KAIST 채널",
+  "segments": [
+    {
+      "type": "video",
+      "src": "재료/i-jQHQcNdWI/video.mp4",
+      "in": 183.92,
+      "out": 186.72
+    },
+    {
+      "type": "video",
+      "src": "재료/i-jQHQcNdWI/video.mp4",
+      "in": 196.73,
+      "out": 206.84,
+      "transition": "fade",
+      "transition_duration": 0.3
+    },
+    {
+      "type": "video",
+      "src": "재료/i-jQHQcNdWI/video.mp4",
+      "in": 285.49,
+      "out": 317.12,
+      "transition": "slideleft",
+      "transition_duration": 0.3
+    }
+  ],
+  "audio": {
+    "mode": "original"
+  },
+  "loudness": {
+    "target": -19,
+    "true_peak": -1.5
+  }
+}

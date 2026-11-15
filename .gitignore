@@ -1,0 +1,13 @@
+# Student files stay out of git. Only the README files in these folders are tracked.
+재료/*
+!재료/README.md
+결과/*
+!결과/README.md
+*.mp4
+*.mov
+*.wav
+*.mp3
+*.m4a
+
+# Prompt logs written by local agent hooks
+prompts/
