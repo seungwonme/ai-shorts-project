@@ -11,3 +11,8 @@
 
 # Prompt logs written by local agent hooks
 prompts/
+
+# API keys the student pastes with 키-입력.bat. Never commit or send these. (env-template.txt is the empty template and stays tracked.)
+.env
+.env.*
+*.env

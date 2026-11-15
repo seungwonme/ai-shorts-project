@@ -16,24 +16,82 @@
     {
       "type": "image",
       "src": "재료/기사-69110/img-01.jpg",
-      "duration": 4.657,
-      "push_in": 0.06
+      "duration": 2.329,
+      "push_in": 0.06,
+      "crop": {
+        "x": 0.0,
+        "y": 0.0,
+        "w": 0.65,
+        "h": 0.7
+      }
+    },
+    {
+      "type": "image",
+      "src": "재료/기사-69110/img-01.jpg",
+      "duration": 2.328,
+      "push_in": 0.06,
+      "crop": {
+        "x": 0.35,
+        "y": 0.3,
+        "w": 0.65,
+        "h": 0.7
+      }
     },
     {
       "type": "image",
       "src": "재료/기사-69110/img-02.jpg",
-      "duration": 6.02,
+      "duration": 3.01,
       "push_in": 0.06,
       "transition": "fade",
-      "transition_duration": 0.3
+      "transition_duration": 0.3,
+      "crop": {
+        "x": 0.0,
+        "y": 0.0,
+        "w": 0.65,
+        "h": 0.7
+      }
+    },
+    {
+      "type": "image",
+      "src": "재료/기사-69110/img-02.jpg",
+      "duration": 3.01,
+      "push_in": 0.06,
+      "transition": "fade",
+      "transition_duration": 0.3,
+      "crop": {
+        "x": 0.35,
+        "y": 0.3,
+        "w": 0.65,
+        "h": 0.7
+      }
     },
     {
       "type": "image",
       "src": "재료/기사-69110/img-03.jpg",
-      "duration": 4.226,
+      "duration": 2.113,
       "push_in": 0.06,
       "transition": "fade",
-      "transition_duration": 0.3
+      "transition_duration": 0.3,
+      "crop": {
+        "x": 0.0,
+        "y": 0.0,
+        "w": 0.65,
+        "h": 0.7
+      }
+    },
+    {
+      "type": "image",
+      "src": "재료/기사-69110/img-03.jpg",
+      "duration": 2.113,
+      "push_in": 0.06,
+      "transition": "fade",
+      "transition_duration": 0.3,
+      "crop": {
+        "x": 0.35,
+        "y": 0.3,
+        "w": 0.65,
+        "h": 0.7
+      }
     }
   ],
   "audio": {

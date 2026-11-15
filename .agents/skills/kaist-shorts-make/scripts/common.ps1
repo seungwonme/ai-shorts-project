@@ -114,3 +114,77 @@ function Save-SecretFile([string]$dir, [string]$file, [string]$value) {
     }
     Write-Utf8 $file $value
 }
+
+# ---- API 키 읽기 -------------------------------------------------------------------------------
+# 우선순위: 환경 변수 > 프로젝트 폴더의 .env > 예전 키 파일(-SetupKey 로 만든 파일).
+# 키 값은 화면, 로그, 오류 메시지에 절대 내보내지 않는다. (어디서 읽었는지만 말한다.)
+
+# 한 줄의 "=" 뒤쪽을 값으로 다듬는다. 줄 끝 주석(`KEY=값  # 설명`, agents-env 가 `KEY="값" # 태그`로 쓴다)을 허용한다.
+#  - 따옴표(" 또는 ')로 시작하면 짝이 되는 따옴표까지가 값이다. 따옴표 안의 # 은 값의 일부다.
+#    닫는 따옴표 뒤에는 비어 있거나 공백 + # 주석만 올 수 있다. 그 밖의 글자가 붙어 있으면 따옴표 처리를 하지 않고 줄 전체를 값으로 돌려준다(공백이 있으면 뒤에서 거절된다).
+#  - 따옴표가 없으면 공백(또는 탭) 바로 뒤의 # 부터가 주석이다. 공백 없이 붙은 # 은 값의 일부다.
+# 값 안에 공백이 있으면 여기서는 그대로 돌려주고, Get-ApiKey 가 키로 인정하지 않는다.
+function Split-EnvValue([string]$raw) {
+    if ($raw -match '^[ \t]+#') { return "" }   # KEY= # 주석만 있는 줄은 빈 값
+    $t = $raw.Trim()
+    if ($t.Length -ge 1 -and ($t[0] -eq [char]34 -or $t[0] -eq [char]39)) {
+        $q = $t[0]
+        $end = $t.IndexOf($q, 1)
+        if ($end -ge 1) {
+            $rest = $t.Substring($end + 1)
+            if ($rest.Trim() -eq "" -or $rest -match '^[ \t]+#') { return $t.Substring(1, $end - 1).Trim() }
+        }
+        return $t
+    }
+    $c = [regex]::Match($t, '[ \t]#')
+    if ($c.Success) { $t = $t.Substring(0, $c.Index).TrimEnd() }
+    return $t
+}
+
+# .env 를 KEY=VALUE 로 읽는다. 주석(#), 빈 줄, export 접두사, 따옴표, 앞뒤 공백, BOM, CRLF 를 처리한다.
+# 한 줄에 값 하나만 본다(여러 줄 값은 지원하지 않는다). 같은 이름이 또 나오면 마지막 것을 쓴다.
+function Read-EnvFile([string]$path) {
+    $map = @{}
+    if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { return $map }
+    $text = $utf8.GetString([IO.File]::ReadAllBytes($path)).TrimStart([char]0xFEFF)
+    foreach ($raw in ($text -split "`r`n|`n|`r")) {
+        $line = $raw.Trim()
+        if (-not $line -or $line.StartsWith("#")) { continue }
+        $line = $line -replace '^export\s+', ''
+        $m = [regex]::Match($line, '^([A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$')
+        if (-not $m.Success) { continue }
+        $v = Split-EnvValue $m.Groups[2].Value
+        $map[$m.Groups[1].Value] = $v
+    }
+    return $map
+}
+
+# 결과: Value(키, 없으면 $null), Source("환경 변수" / ".env" / "키 파일"), Problem(한국어 문제 설명 또는 $null), EmptyInEnv(.env 에 줄은 있는데 값이 빔)
+function Get-ApiKey([string]$name, [string]$legacyFile) {
+    $r = New-Object psobject -Property @{ Value = $null; Source = $null; Problem = $null; EmptyInEnv = $false }
+    $ev = [Environment]::GetEnvironmentVariable($name)
+    if ($ev -and $ev.Trim()) { $r.Value = $ev.Trim(); $r.Source = "환경 변수" }
+    if (-not $r.Value) {
+        $map = Read-EnvFile (Join-Path (Find-ProjectRoot) ".env")
+        if ($map.ContainsKey($name)) {
+            if ($map[$name]) { $r.Value = $map[$name]; $r.Source = ".env" } else { $r.EmptyInEnv = $true }
+        }
+    }
+    if (-not $r.Value -and $legacyFile -and (Test-Path -LiteralPath $legacyFile)) {
+        $t = (Get-Content -LiteralPath $legacyFile -Raw -Encoding UTF8)
+        if ($t -and $t.Trim()) { $r.Value = $t.Trim(); $r.Source = "키 파일" }
+    }
+    # 키는 보이는 영문, 숫자, 기호 한 덩어리다. 공백, 줄바꿈, 한글이 섞이면 잘못 붙여 넣은 것이다.
+    if ($r.Value -and $r.Value -notmatch '^[\x21-\x7E]+$') {
+        $r.Problem = "$($r.Source)의 키에 공백, 줄바꿈, 한글 같은 글자가 섞여 있습니다. 키 전체만 = 바로 뒤에 붙여 넣었는지 확인해 주세요. (키 값은 화면에 보여 주지 않습니다.)"
+        $r.Value = $null
+    }
+    return $r
+}
+
+# 키가 없을 때 사용자에게 보여 줄 한 문장 (값은 들어 있지 않다)
+function Key-Missing([object]$r, [string]$service) {
+    if ($r.Problem) { return $r.Problem }
+    if ($r.EmptyInEnv) { return "$service 키가 비어 있음: 키-입력.bat 으로 .env에 붙여 넣으세요." }
+    return "$service 키가 없습니다: 키-입력.bat 으로 .env에 붙여 넣으세요."
+}

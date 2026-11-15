@@ -39,8 +39,8 @@ $video = Join-Path $dir "video.mp4"
 
 if ((Test-Path -LiteralPath $video) -and -not $Force) { Say "이미 받아 둔 영상이 있어 다시 받지 않습니다. (다시 받으려면 -Force)" }
 else {
-    Say "영상을 내려받는 중... (1080p 이하)"
-    $dl = Invoke-Tool $yt @("--no-playlist", "--no-warnings", "--ffmpeg-location", $ffdir, "-f", "bv*[height<=1080][vcodec^=avc1]+ba/bv*[height<=1080]+ba/b[height<=1080]/b", "--merge-output-format", "mp4", "-o", (Join-Path $dir "video.%(ext)s"), $Url) $null
+    Say "영상을 내려받는 중... (1080p 이하, 세로 쇼츠는 1080x1920까지)"
+    $dl = Invoke-Tool $yt @("--no-playlist", "--no-warnings", "--ffmpeg-location", $ffdir, "-f", "bv*[height<=1920][width<=1920][vcodec^=avc1]+ba/bv*[height<=1920][width<=1920]+ba/b[height<=1920][width<=1920]/b", "--merge-output-format", "mp4", "-o", (Join-Path $dir "video.%(ext)s"), $Url) $null
     if ($dl.Code -ne 0) { Fail ("내려받기에 실패했습니다.`n" + (Tail $dl.Err 1200)) }
     if (-not (Test-Path -LiteralPath $video)) { Fail "내려받은 mp4 파일을 찾지 못했습니다." }
 }

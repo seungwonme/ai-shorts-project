@@ -1,0 +1,327 @@
+{
+  "_설명": "형식 참고용 예시 4 (highlight와 text_card). 포스터 한 장의 영역(crop)에서 box를 옮겨 가며 줄 내용을 짚고, 기사 문장은 text_card로 보여 줍니다. 기본은 정지이고 box는 조각 시작 0.3초 뒤에 페이드 인합니다. 경로(재료/기사-69410/img-01.jpg, narration.wav)는 가짜이며 실제 폴더에 맞게 바꿉니다.",
+  "output": "결과/예시-하이라이트/shorts.mp4",
+  "title": [
+    {
+      "text": "AI 시대, 인간의 삶",
+      "color": "white"
+    },
+    {
+      "text": "지능 너머를 묻다",
+      "color": "teal"
+    }
+  ],
+  "bottom_text": "↓ 자세한 소식은 KAIST 뉴스",
+  "segments": [
+    {
+      "_설명": "줄1: 제목 지능 너머",
+      "type": "highlight",
+      "src": "재료/기사-69410/img-01.jpg",
+      "crop": {
+        "x": 0,
+        "y": 0.1,
+        "w": 1,
+        "h": 0.56
+      },
+      "box": {
+        "x": 0.27,
+        "y": 0.11,
+        "w": 0.46,
+        "h": 0.17
+      },
+      "duration": 3.069
+    },
+    {
+      "_설명": "줄2a: 기관 로고 윗줄",
+      "type": "highlight",
+      "src": "재료/기사-69410/img-01.jpg",
+      "crop": {
+        "x": 0,
+        "y": 0.42,
+        "w": 1,
+        "h": 0.56
+      },
+      "box": {
+        "x": 0.05,
+        "y": 0.09,
+        "w": 0.9,
+        "h": 0.17
+      },
+      "duration": 3.083,
+      "transition": "fade",
+      "transition_duration": 0.3
+    },
+    {
+      "_설명": "줄2b: 기관 로고 아랫줄",
+      "type": "highlight",
+      "src": "재료/기사-69410/img-01.jpg",
+      "crop": {
+        "x": 0,
+        "y": 0.42,
+        "w": 1,
+        "h": 0.56
+      },
+      "box": {
+        "x": 0.05,
+        "y": 0.27,
+        "w": 0.9,
+        "h": 0.19
+      },
+      "duration": 3.083,
+      "transition": "fade",
+      "transition_duration": 0.3
+    },
+    {
+      "_설명": "줄3a: 날짜",
+      "type": "highlight",
+      "src": "재료/기사-69410/img-01.jpg",
+      "crop": {
+        "x": 0,
+        "y": 0.42,
+        "w": 1,
+        "h": 0.56
+      },
+      "box": {
+        "x": 0.18,
+        "y": 0.58,
+        "w": 0.64,
+        "h": 0.09
+      },
+      "duration": 2.909,
+      "transition": "fade",
+      "transition_duration": 0.3
+    },
+    {
+      "_설명": "줄3b: 일정 문장",
+      "type": "text_card",
+      "lines": [
+        "행사는 11월 23일 저녁 환영 만찬을 시작으로, 24일 종일 개회와 연구발표, 25일 오전 연구발표와 폐회 순으로 진행할 예정이다."
+      ],
+      "highlight": [
+        1
+      ],
+      "duration": 2.909,
+      "transition": "fade",
+      "transition_duration": 0.3
+    },
+    {
+      "_설명": "줄4a: 장소",
+      "type": "highlight",
+      "src": "재료/기사-69410/img-01.jpg",
+      "crop": {
+        "x": 0,
+        "y": 0.42,
+        "w": 1,
+        "h": 0.56
+      },
+      "box": {
+        "x": 0.22,
+        "y": 0.67,
+        "w": 0.56,
+        "h": 0.1
+      },
+      "duration": 2.576,
+      "transition": "fade",
+      "transition_duration": 0.3
+    },
+    {
+      "_설명": "줄4b: 장소 문장 (기사 문단2를 줄임)",
+      "type": "text_card",
+      "lines": [
+        "공동 심포지엄 ‘지능 너머(Beyond Intelligence)’는 대전 본원 학술문화관(E9) 2층 양승택 오디토리움에서 열린다."
+      ],
+      "highlight": [
+        1
+      ],
+      "duration": 2.576,
+      "transition": "fade",
+      "transition_duration": 0.3
+    },
+    {
+      "_설명": "줄5a: 기사 문장",
+      "type": "text_card",
+      "lines": [
+        "심포지엄은 AI가 인간의 경험과 관계, 삶의 의미에 어떤 변화를 가져오는지 살펴본다."
+      ],
+      "highlight": [
+        1
+      ],
+      "duration": 3.28,
+      "transition": "fade",
+      "transition_duration": 0.3
+    },
+    {
+      "_설명": "줄5b: 부제",
+      "type": "highlight",
+      "src": "재료/기사-69410/img-01.jpg",
+      "crop": {
+        "x": 0,
+        "y": 0.1,
+        "w": 1,
+        "h": 0.56
+      },
+      "box": {
+        "x": 0.2,
+        "y": 0.36,
+        "w": 0.6,
+        "h": 0.1
+      },
+      "duration": 3.28,
+      "transition": "fade",
+      "transition_duration": 0.3
+    },
+    {
+      "_설명": "줄6a: 키워드",
+      "type": "highlight",
+      "src": "재료/기사-69410/img-01.jpg",
+      "crop": {
+        "x": 0,
+        "y": 0.1,
+        "w": 1,
+        "h": 0.56
+      },
+      "box": {
+        "x": 0.27,
+        "y": 0.43,
+        "w": 0.46,
+        "h": 0.08
+      },
+      "duration": 3.378,
+      "transition": "fade",
+      "transition_duration": 0.3
+    },
+    {
+      "_설명": "줄6b: 기사 문장",
+      "type": "text_card",
+      "lines": [
+        "인간 조건의 변화를 ‘신체성·사회성·영성’의 세 차원에서 살피고, 그 방향을 판단할 지혜를 모색한다."
+      ],
+      "highlight": [
+        1
+      ],
+      "duration": 3.378,
+      "transition": "fade",
+      "transition_duration": 0.3
+    },
+    {
+      "_설명": "줄7a: 기사 문장",
+      "type": "text_card",
+      "lines": [
+        "24일에는 국내외 여러 분야의 연구자가 함께 주요 쟁점을 논의하는 라운드테이블도 계획하고 있다."
+      ],
+      "highlight": [
+        1
+      ],
+      "duration": 3.204,
+      "transition": "fade",
+      "transition_duration": 0.3
+    },
+    {
+      "_설명": "줄7b: 협력기관",
+      "type": "highlight",
+      "src": "재료/기사-69410/img-01.jpg",
+      "crop": {
+        "x": 0,
+        "y": 0.42,
+        "w": 1,
+        "h": 0.56
+      },
+      "box": {
+        "x": 0.05,
+        "y": 0.09,
+        "w": 0.9,
+        "h": 0.37
+      },
+      "duration": 3.204,
+      "transition": "fade",
+      "transition_duration": 0.3
+    },
+    {
+      "_설명": "줄8a: 웹사이트 주소",
+      "type": "highlight",
+      "src": "재료/기사-69410/img-01.jpg",
+      "crop": {
+        "x": 0,
+        "y": 0.42,
+        "w": 1,
+        "h": 0.56
+      },
+      "box": {
+        "x": 0.2,
+        "y": 0.83,
+        "w": 0.6,
+        "h": 0.14
+      },
+      "duration": 2.667,
+      "transition": "fade",
+      "transition_duration": 0.3
+    },
+    {
+      "_설명": "줄8b: 제목 마무리",
+      "type": "highlight",
+      "src": "재료/기사-69410/img-01.jpg",
+      "crop": {
+        "x": 0,
+        "y": 0.1,
+        "w": 1,
+        "h": 0.56
+      },
+      "box": {
+        "x": 0.27,
+        "y": 0.11,
+        "w": 0.46,
+        "h": 0.17
+      },
+      "duration": 2.667,
+      "transition": "fade",
+      "transition_duration": 0.3
+    }
+  ],
+  "audio": {
+    "mode": "narration",
+    "file": "결과/예시-하이라이트/narration.wav",
+    "narration_volume": 1.0
+  },
+  "captions": [
+    {
+      "start": 0.15,
+      "end": 2.869,
+      "text": "AI 시대, 인간은 어떻게 살아가야 할까"
+    },
+    {
+      "start": 3.069,
+      "end": 8.435,
+      "text": "KAIST가 교토와 MIT의 참여기관들과"
+    },
+    {
+      "start": 8.635,
+      "end": 13.654,
+      "text": "공동 심포지엄 ‘지능 너머’는 11월 2"
+    },
+    {
+      "start": 13.854,
+      "end": 18.206,
+      "text": "장소는 대전 본원 학술문화관 2층 양승택"
+    },
+    {
+      "start": 18.406,
+      "end": 24.166,
+      "text": "심포지엄은 AI가 인간의 경험과 관계, "
+    },
+    {
+      "start": 24.366,
+      "end": 30.321,
+      "text": "인간 조건의 변화를 신체성, 사회성, 영"
+    },
+    {
+      "start": 30.521,
+      "end": 36.129,
+      "text": "24일에는 여러 분야의 연구자들이 주요 "
+    },
+    {
+      "start": 36.329,
+      "end": 40.713,
+      "text": "상세 안내와 일정은 심포지엄 공식 웹사이"
+    }
+  ]
+}

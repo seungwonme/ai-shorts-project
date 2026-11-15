@@ -1,6 +1,7 @@
 ﻿# Typecast 목소리로 나레이션 만들기 (PowerShell 5.1 / 7 겸용)
 #
-#   키 저장(처음 한 번):  typecast.ps1 -SetupKey          (Typecast 사이트에서 키를 복사(Ctrl+C)한 뒤 실행)
+#   키 넣기(기본):        키-입력.bat 을 더블클릭해 .env 의 TYPECAST_API_KEY= 뒤에 붙여 넣고 저장
+#   키 저장(대체 수단):   typecast.ps1 -SetupKey          (Typecast 사이트에서 키를 복사(Ctrl+C)한 뒤 실행)
 #   키 확인:              typecast.ps1 -Status
 #   목소리 고르기:        typecast.ps1 -ListVoices        (결과\목소리-목록.html을 엽니다)
 #   나레이션 만들기:      typecast.ps1 -Script 대본.txt -VoiceId tc_... -OutDir 결과\날짜-이름\narration
@@ -8,8 +9,8 @@
 # 대본 파일은 한 줄이 한 문장입니다. 줄마다 음성을 만들고, 앞뒤 무음을 자르고, 음량을 맞춘 뒤
 # 줄 사이에 쉼을 두어 narration.wav 한 파일로 합칩니다. 줄별 시작/끝 시각은 narration.json에 적습니다.
 # API 키는 화면, 로그, 프로젝트 폴더, spec.json에 절대 적지 않습니다.
+# 키를 읽는 순서: 환경 변수 TYPECAST_API_KEY > 프로젝트 폴더의 .env > 키 파일(-SetupKey 로 만든 것)
 # 키 파일: Windows %USERPROFILE%\.kaist-shorts\typecast-key.txt, Mac/Linux ~/.kaist-shorts/typecast-key.txt
-# (환경 변수 TYPECAST_API_KEY가 있으면 그것을 먼저 씁니다.)
 # 이 파일은 UTF-8 (BOM 포함)으로 저장합니다.
 param(
     [switch]$SetupKey,
@@ -34,13 +35,6 @@ if ($env:USERPROFILE) { $homeDir = $env:USERPROFILE }
 $keyDir = Join-Path $homeDir ".kaist-shorts"
 $keyFile = Join-Path $keyDir "typecast-key.txt"
 $isWin = ($env:OS -eq "Windows_NT")
-
-function Get-Key {
-    $k = $env:TYPECAST_API_KEY
-    if ($k) { return $k.Trim() }
-    if (Test-Path -LiteralPath $keyFile) { return ((Get-Content -LiteralPath $keyFile -Raw -Encoding UTF8).Trim()) }
-    return $null
-}
 
 function Api-Error([object]$err, [string]$what) {
     $code = 0
@@ -79,14 +73,14 @@ if ($SetupKey) {
 }
 
 if ($Status) {
-    if ($env:TYPECAST_API_KEY) { Say "키 있음 (환경 변수)"; return }
-    if (Test-Path -LiteralPath $keyFile) { Say "키 있음: $keyFile"; return }
-    Say "키 없음. Typecast API 키를 복사한 뒤 -SetupKey 를 실행해야 합니다."
+    $kr = Get-ApiKey "TYPECAST_API_KEY" $keyFile
+    if ($kr.Value) { Say ("키 있음 (출처: {0})" -f $kr.Source) } else { Say (Key-Missing $kr "Typecast") }
     return
 }
 
-$key = Get-Key
-if (-not $key) { Fail "Typecast 키가 없습니다. Typecast 사이트에서 API 키를 복사(Ctrl+C)한 뒤 알려 주세요. (-SetupKey)" }
+$kr = Get-ApiKey "TYPECAST_API_KEY" $keyFile
+if (-not $kr.Value) { Fail (Key-Missing $kr "Typecast") }
+$key = $kr.Value
 
 # ---- 목소리 목록 ---------------------------------------------------------------------------
 if ($ListVoices) {
