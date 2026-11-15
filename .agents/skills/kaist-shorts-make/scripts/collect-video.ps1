@@ -30,7 +30,10 @@ if ($ir.Code -ne 0) {
 }
 $info = $ir.Out | ConvertFrom-Json
 $id = [string]$info.id
-$dir = Join-Path (Join-Path $ROOT "재료") $id
+# The folder name comes from the site's id: keep only safe characters so it stays inside 재료.
+$folder = $id -replace '[^A-Za-z0-9_-]', '_'
+if (-not $folder) { $folder = "video" }
+$dir = Join-Path (Join-Path $ROOT "재료") $folder
 New-Item -ItemType Directory -Force -Path $dir | Out-Null
 $video = Join-Path $dir "video.mp4"
 
