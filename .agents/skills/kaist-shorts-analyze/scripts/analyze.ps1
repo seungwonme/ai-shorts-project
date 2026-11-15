@@ -175,11 +175,14 @@ function Build-Report([string]$dir) {
     $cs = $a.cut_stats
     $cutSummary = "컷 $($cs.count)개, 평균 $('{0:0.00}' -f [double]$cs.mean)초, 가운데 값 $('{0:0.00}' -f [double]$cs.median)초, 가장 짧은 컷 $('{0:0.00}' -f [double]$cs.min)초, 가장 긴 컷 $('{0:0.00}' -f [double]$cs.max)초"
 
-    # 소리
+    # 소리 측정: 말소리, 배경 음악, 효과음이 한데 섞인 값이다
     $soundHtml = ""
     $lo = $a.loudness
     if ($lo -and $lo.available) {
-        $soundHtml = "<table><tbody><tr><th>통합 음량</th><td>$(Esc ([string]$lo.integrated_lufs)) LUFS</td></tr><tr><th>소리 폭(LRA)</th><td>$(Esc ([string]$lo.lra)) LU</td></tr><tr><th>가장 큰 소리(피크)</th><td>$(Esc ([string]$lo.peak_dbfs)) dBFS</td></tr></tbody></table><p class='muted'>참고: KAIST 공식 쇼츠 솔직후기는 약 -18.7 LUFS(2026-11-15 같은 방법으로 잼). 값이 클수록(0에 가까울수록) 큰 소리입니다.</p>"
+        $silRows = ""
+        foreach ($sl in @(Get-Opt $lo "silences" @())) { $silRows += ("<li>{0:0.00}초 - {1:0.00}초 ({2:0.0}초 동안)</li>" -f [double]$sl.start, [double]$sl.end, [double]$sl.duration) }
+        if ($silRows) { $silHtml = "<p>소리가 거의 없는 구간(말소리, 배경 음악, 효과음이 모두 조용한 곳):</p><ul>$silRows</ul>" } else { $silHtml = "<p>0.5초 이상 소리가 거의 없는 구간은 없었습니다.</p>" }
+        $soundHtml = "<div class='hint'><b>소리 측정 (세 가지 소리가 섞인 전체 값)</b><br>분석 프로그램은 말소리, 배경 음악, 효과음을 따로 갈라서 잴 수 없습니다. 아래 값은 셋이 합쳐진 소리 전체의 값입니다. 각각 무엇이 들어 있는지는 12초 소리 조각을 직접 들어 보고 적습니다.</div><table><tbody><tr><th>통합 음량</th><td>$(Esc ([string]$lo.integrated_lufs)) LUFS</td></tr><tr><th>소리 폭(LRA)</th><td>$(Esc ([string]$lo.lra)) LU</td></tr><tr><th>가장 큰 소리(피크)</th><td>$(Esc ([string]$lo.peak_dbfs)) dBFS</td></tr></tbody></table><p class='muted'>참고: KAIST 공식 쇼츠 솔직후기는 약 -18.7 LUFS(2026-11-15 같은 방법으로 잼). 값이 클수록(0에 가까울수록) 큰 소리입니다.</p>$silHtml"
     } else { $soundHtml = "<p class='muted'>이 영상에는 소리가 없거나 잴 수 없었습니다.</p>" }
 
     $clipHtml = ""
@@ -193,7 +196,8 @@ function Build-Report([string]$dir) {
         if ($nm) { $fontRows += "<tr><td>$(Esc $nm)</td><td>$(Esc ([string](Get-Opt $c 'confidence' '')))</td><td>$(Esc ([string](Get-Opt $c 'why' '')))</td></tr>" }
     }
     if (-not $fontRows) { $fontRows = "<tr><td colspan='3' class='muted'>아직 후보를 적지 않았습니다.</td></tr>" }
-    $musicNote = [string](Get-Opt (Get-Opt $fd "music" $null) "note" "")
+    $musicNote = [string](Get-Opt (Get-Opt $fd "music_search" $null) "note" "")
+    if (-not $musicNote) { $musicNote = [string](Get-Opt (Get-Opt $fd "music" $null) "note" "") }
 
     $css = @"
 body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;margin:0;background:#f6f7f9;color:#1d2330;line-height:1.6}
@@ -213,14 +217,16 @@ nav a{margin-right:12px;font-size:14px}
     [void]$parts.Add("<!DOCTYPE html><html lang='ko'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>쇼츠 설계도: $(Esc $title)</title><style>$css</style></head><body><main>")
     [void]$parts.Add("<h1>쇼츠 설계도</h1><p><b>$(Esc $title)</b></p>")
     if ($summary) { [void]$parts.Add("<p>$(Esc $summary)</p>") }
-    [void]$parts.Add("<nav><a href='#frame'>1 화면 틀</a><a href='#visual'>2 시각 자료</a><a href='#text'>3 글자</a><a href='#sound'>4 소리</a><a href='#flow'>5 흐름</a><a href='#font'>폰트 찾기</a><a href='#music'>곡 찾기</a><a href='#ask'>볼 때 묻는 질문</a></nav>")
+    [void]$parts.Add("<nav><a href='#frame'>1 화면 틀</a><a href='#visual'>2 시각 요소</a><a href='#text'>3 글자</a><a href='#speech'>4 말소리</a><a href='#bgm'>5 배경 음악</a><a href='#sfx'>6 효과음</a><a href='#cuts'>컷과 편집점</a><a href='#font'>폰트 찾기</a><a href='#music'>곡 찾기</a><a href='#ask'>볼 때 묻는 질문</a></nav>")
     [void]$parts.Add("<section><h2>영상 정보</h2><table><tbody>$metaHtml</tbody></table></section>")
 
     [void]$parts.Add("<section id='frame'><h2>1. 화면 틀</h2><p class='muted'>화면을 어떤 칸으로 나눴는지(로고, 제목, 영상 칸, 아래 안내)와 크기, 색, 위치입니다.</p><div class='row'><div><img class='big' src='$(Esc $a.files.first_frame)' alt='첫 화면'></div></div>$(Items-Html (Get-Opt $g 'frame' $null))</section>")
-    [void]$parts.Add("<section id='visual'><h2>2. 시각 자료</h2><p class='muted'>영상, 사진, 그림 같은 화면 자료가 어떤 것으로 어떻게 쓰였는지입니다. 아래는 컷마다 첫 화면을 모은 표입니다(왼쪽 위부터 번호 순서).</p><a href='$(Esc $a.files.contact_sheet)'><img class='big' src='$(Esc $a.files.contact_sheet)' alt='컷 모음표'></a>$(Items-Html (Get-Opt $g 'visual' $null))</section>")
-    [void]$parts.Add("<section id='text'><h2>3. 글자 (제목, 자막)</h2><p class='muted'>제목과 자막의 내용, 색, 크기, 위치, 나타나는 시간입니다.</p>$(Items-Html (Get-Opt $g 'text' $null))</section>")
-    [void]$parts.Add("<section id='sound'><h2>4. 소리 (대사/나레이션, 배경 음악, 효과음)</h2>$soundHtml$clipHtml$(Items-Html (Get-Opt $g 'sound' $null))</section>")
-    [void]$parts.Add("<section id='flow'><h2>5. 흐름 (컷 길이, 순서)</h2><p><b>$(Esc $cutSummary)</b></p><p class='muted'>컷은 화면이 바뀌는 한 토막입니다. 장면은 뜻으로 묶은 컷 몇 개입니다. 흐름은 컷의 길이와 순서가 도입, 전개, 강조, 마무리로 어떻게 이어지는지 봅니다. 컷은 화면이 확 바뀌는 곳을 프로그램이 찾은 것이라 서서히 바뀌는 전환은 놓칠 수 있습니다.</p>$(Items-Html (Get-Opt $g 'flow' $null))<details open><summary>컷 목록</summary><table><thead><tr><th>번호</th><th>시작(초)</th><th>끝(초)</th><th>길이(초)</th><th>첫 화면</th></tr></thead><tbody>$cutRows</tbody></table></details></section>")
+    [void]$parts.Add("<section id='visual'><h2>2. 시각 요소</h2><p class='muted'>영상, 사진, 그림 같은 화면 속 그림이 어떤 것으로 어떻게 쓰였는지입니다. 아래는 컷마다 첫 화면을 모은 표입니다(왼쪽 위부터 번호 순서).</p><a href='$(Esc $a.files.contact_sheet)'><img class='big' src='$(Esc $a.files.contact_sheet)' alt='컷 모음표'></a>$(Items-Html (Get-Opt $g 'visual' $null))</section>")
+    [void]$parts.Add("<section id='text'><h2>3. 글자 (제목 글자, 자막)</h2><p class='muted'>화면에 얹힌 글자입니다. 제목 같은 글자와, 하는 말을 옮겨 적은 자막의 내용, 색, 크기, 위치, 나타나는 시간입니다.</p>$(Items-Html (Get-Opt $g 'text' $null))</section>")
+    [void]$parts.Add("<section id='speech'><h2>4. 말소리 (대사, 나레이션)</h2><p class='muted'>사람이 하는 말입니다. 누가, 어떤 말투와 빠르기로, 언제부터 언제까지 말하는지 적습니다.</p>$soundHtml$clipHtml$(Items-Html (Get-Opt $g 'speech' $null))<p class='muted'>말소리만 따로 잰 값은 없습니다. 위 측정은 전체 소리입니다.</p></section>")
+    [void]$parts.Add("<section id='bgm'><h2>5. 배경 음악</h2><p class='muted'>말 뒤에 깔리는 음악입니다. 있는지, 어떤 분위기인지, 말소리보다 작은지 적습니다. 음악이 있는지는 프로그램이 판단하지 못하니 소리 조각을 들어 보고 사람이 정합니다. 곡 이름 찾는 방법은 아래 &quot;곡 찾기&quot;에 있습니다.</p>$clipHtml$(Items-Html (Get-Opt $g 'music' $null))<p class='muted'>배경 음악만 따로 잰 값은 없습니다. 4번 말소리 칸의 전체 소리 측정을 참고하세요.</p></section>")
+    [void]$parts.Add("<section id='sfx'><h2>6. 효과음</h2><p class='muted'>짧게 들어가는 소리입니다(전환할 때의 휙 소리, 강조할 때의 띵 소리 등). 어느 시각에 어떤 소리가 들어가는지 적습니다. 효과음은 프로그램이 찾아내지 못하니 영상을 보고 들으며 사람이 적습니다.</p>$(Items-Html (Get-Opt $g 'sfx' $null))<p class='muted'>효과음만 따로 잰 값은 없습니다.</p></section>")
+    [void]$parts.Add("<section id='cuts'><h2>컷과 편집점 (분석에 쓰는 말)</h2><p><b>$(Esc $cutSummary)</b></p><p class='muted'>이 칸은 영상의 구성 요소가 아니라 영상을 분석할 때 쓰는 말입니다. 컷은 화면이 바뀌는 한 토막이고, 편집점은 컷과 컷 사이의 경계입니다. 장면은 뜻으로 묶은 컷 몇 개입니다. 컷의 길이와 순서가 도입, 전개, 강조, 마무리로 어떻게 이어지는지 봅니다. 컷은 화면이 확 바뀌는 곳을 프로그램이 찾은 것이라 서서히 바뀌는 전환은 놓칠 수 있습니다.</p>$(Items-Html (Get-Opt $g 'cuts' $null))<details open><summary>컷 목록</summary><table><thead><tr><th>번호</th><th>시작(초)</th><th>끝(초)</th><th>길이(초)</th><th>첫 화면</th></tr></thead><tbody>$cutRows</tbody></table></details></section>")
 
     $fontSec = @"
 <section id='font'><h2>폰트 찾기</h2>
@@ -260,7 +266,7 @@ $clipHtml
 <table><thead><tr><th>곡/효과음 제목</th><th>만든 사람</th><th>받은 주소</th><th>라이선스 이름</th><th>상업 이용 가능 문구</th><th>출처 표시 문구</th><th>받은 날</th></tr></thead><tbody><tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody></table></section>
 "@
     [void]$parts.Add($musicSec)
-    $qs = @("첫 장면이 관심을 끄는가?", "가장 먼저 보이는 것은 무엇인가?", "전환 속도가 내용과 맞는가?", "소리가 화면과 맞는가?", "자막이 핵심을 돕는가?", "끝나고 남는 메시지는 무엇인가?")
+    $qs = @("첫 장면이 관심을 끄는가?", "가장 먼저 보이는 것은 무엇인가?", "컷이 바뀌는 속도가 내용과 맞는가?", "소리가 화면과 맞는가?", "자막이 핵심을 돕는가?", "끝나고 남는 메시지는 무엇인가?")
     $ans = @(Get-Opt $fd "questions" @())
     $qHtml = ""
     for ($qi = 0; $qi -lt $qs.Count; $qi++) {
@@ -433,7 +439,7 @@ $files = [ordered]@{
 }
 if ($as) {
     Say "소리 크기를 재는 중..."
-    $lr = Run-FFmpeg @("-i", $src, "-vn", "-af", "ebur128=peak=true", "-f", "null", "-") "소리 크기 재기"
+    $lr = Run-FFmpeg @("-i", $src, "-vn", "-af", "ebur128=peak=true,silencedetect=n=-50dB:d=0.5", "-f", "null", "-") "소리 크기 재기"
     $iM = [regex]::Matches($lr.Err, 'I:\s+(-?[0-9.]+)\s+LUFS')
     $lM = [regex]::Matches($lr.Err, 'LRA:\s+([0-9.]+)\s+LU')
     $pM = [regex]::Matches($lr.Err, 'Peak:\s+(-?[0-9.]+)\s+dBFS')
@@ -442,6 +448,20 @@ if ($as) {
         if ($lM.Count -gt 0) { $loud.lra = $lM[$lM.Count - 1].Groups[1].Value }
         if ($pM.Count -gt 0) { $loud.peak_dbfs = $pM[$pM.Count - 1].Groups[1].Value }
     }
+    # 소리가 거의 없는 구간(-50 dB 아래로 0.5초 이상). 말소리, 배경 음악, 효과음이 모두 없는 구간이다.
+    $silences = @()
+    $openStart = $null
+    foreach ($ln in ($lr.Err -split "\r?\n")) {
+        $ms = [regex]::Match($ln, 'silence_start:\s*(-?[0-9.]+)')
+        if ($ms.Success) { $openStart = [Math]::Max(0.0, [double]::Parse($ms.Groups[1].Value, $inv)); continue }
+        $me = [regex]::Match($ln, 'silence_end:\s*(-?[0-9.]+)\s*\|\s*silence_duration:\s*([0-9.]+)')
+        if ($me.Success -and $null -ne $openStart) {
+            $silences += [ordered]@{ start = [Math]::Round($openStart, 2); end = [Math]::Round([double]::Parse($me.Groups[1].Value, $inv), 2); duration = [Math]::Round([double]::Parse($me.Groups[2].Value, $inv), 2) }
+            $openStart = $null
+        }
+    }
+    if ($null -ne $openStart) { $silences += [ordered]@{ start = [Math]::Round($openStart, 2); end = [Math]::Round($dur, 2); duration = [Math]::Round($dur - $openStart, 2) } }
+    $loud.silences = $silences
     # 12초 소리 조각 (곡 찾기용)
     $cs0 = $ClipStart
     if ($cs0 -lt 0) { if ($dur -gt 17) { $cs0 = 3.0 } else { $cs0 = 0.0 } }
@@ -472,12 +492,13 @@ if (-not (Test-Path -LiteralPath $fpath)) {
         title = $meta.title
         summary = ""
         groups = [ordered]@{
-            frame = (& $blank "화면 틀"); visual = (& $blank "시각 자료"); text = (& $blank "글자 (제목, 자막)")
-            sound = (& $blank "소리 (대사/나레이션, 배경 음악, 효과음)"); flow = (& $blank "흐름 (컷 길이, 순서)")
+            frame = (& $blank "화면 틀"); visual = (& $blank "시각 요소"); text = (& $blank "글자 (제목 글자, 자막)")
+            speech = (& $blank "말소리 (대사, 나레이션)"); music = (& $blank "배경 음악"); sfx = (& $blank "효과음")
+            cuts = (& $blank "컷과 편집점 (분석에 쓰는 말)")
         }
         font = [ordered]@{ candidates = @([ordered]@{ name = ""; confidence = ""; why = "" }) }
-        music = [ordered]@{ note = "" }
-        questions = @(@("첫 장면이 관심을 끄는가?", "가장 먼저 보이는 것은 무엇인가?", "전환 속도가 내용과 맞는가?", "소리가 화면과 맞는가?", "자막이 핵심을 돕는가?", "끝나고 남는 메시지는 무엇인가?") | ForEach-Object { [ordered]@{ question = $_; answer = "" } })
+        music_search = [ordered]@{ note = "" }
+        questions = @(@("첫 장면이 관심을 끄는가?", "가장 먼저 보이는 것은 무엇인가?", "컷이 바뀌는 속도가 내용과 맞는가?", "소리가 화면과 맞는가?", "자막이 핵심을 돕는가?", "끝나고 남는 메시지는 무엇인가?") | ForEach-Object { [ordered]@{ question = $_; answer = "" } })
     }
     Write-Utf8 $fpath (Json $tpl)
 }
