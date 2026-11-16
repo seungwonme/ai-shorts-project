@@ -1,0 +1,125 @@
+{
+  "name": "KAIST-행사",
+  "source_url": "https://www.youtube.com/watch?v=IyGoQWBCanQ",
+  "source_file": "재료/ref-IyGoQWBCanQ.mp4",
+  "scene_threshold": 0.1,
+  "video_box": "0,0.303,1,0.394",
+  "meta": {
+    "title": "POSTECH 학생들의 KAIST 방문 솔직후기!",
+    "uploader": "KAIST",
+    "upload_date": "20231019",
+    "view_count": "37573",
+    "duration": 49.694,
+    "width": 1080,
+    "height": 1920,
+    "fps": 29.97,
+    "video_codec": "h264",
+    "audio_codec": "opus"
+  },
+  "cuts": [
+    {
+      "index": 1,
+      "start": 0.0,
+      "end": 1.535,
+      "length": 1.535,
+      "frame": "frames/cut-001.jpg"
+    },
+    {
+      "index": 2,
+      "start": 1.535,
+      "end": 3.837,
+      "length": 2.302,
+      "frame": "frames/cut-002.jpg"
+    },
+    {
+      "index": 3,
+      "start": 3.837,
+      "end": 8.609,
+      "length": 4.771,
+      "frame": "frames/cut-003.jpg"
+    },
+    {
+      "index": 4,
+      "start": 8.609,
+      "end": 16.116,
+      "length": 7.508,
+      "frame": "frames/cut-004.jpg"
+    },
+    {
+      "index": 5,
+      "start": 16.116,
+      "end": 16.95,
+      "length": 0.834,
+      "frame": "frames/cut-005.jpg"
+    },
+    {
+      "index": 6,
+      "start": 16.95,
+      "end": 22.322,
+      "length": 5.372,
+      "frame": "frames/cut-006.jpg"
+    },
+    {
+      "index": 7,
+      "start": 22.322,
+      "end": 28.528,
+      "length": 6.206,
+      "frame": "frames/cut-007.jpg"
+    },
+    {
+      "index": 8,
+      "start": 28.528,
+      "end": 31.532,
+      "length": 3.003,
+      "frame": "frames/cut-008.jpg"
+    },
+    {
+      "index": 9,
+      "start": 31.532,
+      "end": 36.37,
+      "length": 4.838,
+      "frame": "frames/cut-009.jpg"
+    },
+    {
+      "index": 10,
+      "start": 36.37,
+      "end": 39.84,
+      "length": 3.47,
+      "frame": "frames/cut-010.jpg"
+    },
+    {
+      "index": 11,
+      "start": 39.84,
+      "end": 49.694,
+      "length": 9.854,
+      "frame": "frames/cut-011.jpg"
+    }
+  ],
+  "cut_stats": {
+    "count": 11,
+    "mean": 4.518,
+    "median": 4.771,
+    "min": 0.834,
+    "max": 9.854
+  },
+  "loudness": {
+    "available": true,
+    "integrated_lufs": "-18.7",
+    "lra": "6.0",
+    "peak_dbfs": "-3.1",
+    "silences": []
+  },
+  "files": {
+    "first_frame": "first-frame.png",
+    "contact_sheet": "contact-sheet.jpg",
+    "title_crop": "title-crop.png",
+    "audio_clip_wav": "audio-clip.wav",
+    "audio_clip_mp3": "audio-clip.mp3"
+  },
+  "title_crop_box": [
+    0.0,
+    0.15,
+    1.0,
+    0.14
+  ]
+}

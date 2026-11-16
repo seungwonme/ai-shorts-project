@@ -970,7 +970,11 @@ if (-not $NoLogo -and -not $script:LOGO) {
         if (Test-Path -LiteralPath $cand) { $script:LOGO = $cand; break }
     }
 }
-if (-not $NoLogo -and -not $script:LOGO) {
+if (-not $NoLogo -and -not $script:LOGO -and $Check) {
+    # -Check 는 영상을 만들지 않고 검사만 하므로 로고 파일이 없어도 멈추지 않는다.
+    Say "로고가 없어 이 검사에서는 건너뜁니다."
+}
+elseif (-not $NoLogo -and -not $script:LOGO) {
     Fail ("KAIST 로고 파일이 없습니다. 공식 로고는 이 프로젝트에 들어 있지 않습니다.`n" +
         "1) $LOGO_PAGE 에서 'KAIST 로고'를 내려받아(고해상도 파일은 KAIST 포털 로그인이 필요할 수 있습니다) 재료 폴더에 logo.png 로 저장해 주세요. 배경이 투명한 png가 가장 좋습니다.`n" +
         "2) 로고 없이 만들어도 된다고 사용자가 정했다면 -NoLogo 를 붙여 다시 실행하세요.`n" +

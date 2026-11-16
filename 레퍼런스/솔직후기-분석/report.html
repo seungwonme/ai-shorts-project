@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>쇼츠 설계도: POSTECH 학생들의 KAIST 방문 솔직후기!</title>
+<style>
+:root{--blue:#1155A7;--text:#282B2E;--sub:#5F6368;--line:#DDDDDD;--soft:#F3F6FA;--bg:#FFFFFF}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR','Segoe UI',sans-serif;font-size:16px;line-height:1.65}
+main{max-width:980px;margin:0 auto;padding:0 20px 80px}
+header.top{border-top:8px solid var(--blue);padding:28px 0 18px;margin-bottom:6px}
+.kicker{margin:0;color:var(--blue);font-weight:700;font-size:15px;letter-spacing:.02em}
+h1{font-size:30px;line-height:1.35;margin:6px 0 8px;color:var(--text)}
+.summary{margin:0;font-size:17px;color:var(--text)}
+h2{font-size:22px;line-height:1.4;margin:0 0 8px;padding-left:12px;border-left:5px solid var(--blue);color:var(--text)}
+h3{font-size:17px;margin:20px 0 6px;color:var(--blue)}
+section{border-top:1px solid var(--line);padding:24px 0;scroll-margin-top:12px}
+p{margin:8px 0}
+.muted{color:var(--sub);font-size:14px}
+.lead{color:var(--sub);font-size:15px}
+nav.toc{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:14px 0 6px}
+nav.toc .label{margin:0 0 8px;font-size:13px;color:var(--sub);font-weight:700}
+nav.toc ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+nav.toc ol a{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--text);text-decoration:none;font-weight:700;font-size:15px}
+nav.toc ol a:hover{border-color:var(--blue);color:var(--blue)}
+nav.toc .no{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;flex:none}
+nav.toc .more{margin:10px 0 0;font-size:14px;color:var(--sub)}
+nav.toc .more a{color:var(--blue);text-decoration:none;margin-right:14px;font-weight:700}
+nav.toc .more a:hover{text-decoration:underline}
+table{border-collapse:collapse;width:100%;font-size:15px;margin:10px 0}
+th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+thead th{white-space:nowrap;background:var(--soft);color:var(--blue);border-bottom:2px solid var(--blue);font-size:14px}
+table.info th{width:160px;background:var(--soft);color:var(--text);font-weight:700}
+td.empty{color:var(--sub)}
+.tag{display:inline-block;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:1px 8px;font-size:13px;color:var(--sub);margin:2px 6px 2px 0}
+img{max-width:100%}
+img.ev{height:96px;border-radius:6px;margin:2px 6px 2px 0;border:1px solid var(--line)}
+img.thumb{height:84px;border-radius:4px;border:1px solid var(--line)}
+img.big{max-width:100%;max-height:520px;border-radius:8px;border:1px solid var(--line)}
+audio{display:block;width:100%;max-width:520px;margin:8px 0}
+.hint{background:var(--soft);border-left:5px solid var(--blue);border-radius:0 8px 8px 0;padding:10px 14px;font-size:14.5px;margin:12px 0}
+code{background:var(--soft);border:1px solid var(--line);padding:1px 6px;border-radius:4px;font-size:.92em}
+ol li,ul li{margin:4px 0}
+.qa li{margin:10px 0}
+details summary{cursor:pointer;font-weight:700;color:var(--blue);margin:8px 0}
+footer.note{border-top:1px solid var(--line);padding-top:16px;margin-top:8px}
+@media (max-width:900px){nav.toc ol{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:640px){h1{font-size:24px}nav.toc ol{grid-template-columns:repeat(2,1fr)}th,td{padding:6px}img.ev{height:72px}}
+@media print{nav.toc{display:none}section{break-inside:avoid-page}audio{display:none}}
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+<p class="kicker">쇼츠 설계도</p>
+<h1>POSTECH 학생들의 KAIST 방문 솔직후기!</h1>
+<p class="summary">처음에는 과자 탑과 행사 풍경으로 시선을 끌고, 이어 POSTECH 학생들에게 KAIST 방문 소감을 묻는 인터뷰를 보여 줍니다. 고정된 KAIST 제목 틀 안에서 인터뷰 대상과 장면을 바꾸며 마지막까지 솔직한 답변을 이어 갑니다.</p>
+</header>
+
+<nav class="toc" aria-label="목차">
+<p class="label">영상의 여섯 가지 요소</p>
+<ol>
+<li><a href="#frame"><span class="no">1</span>화면 틀</a></li>
+<li><a href="#visual"><span class="no">2</span>시각 요소</a></li>
+<li><a href="#text"><span class="no">3</span>글자</a></li>
+<li><a href="#speech"><span class="no">4</span>말소리</a></li>
+<li><a href="#bgm"><span class="no">5</span>배경 음악</a></li>
+<li><a href="#sfx"><span class="no">6</span>효과음</a></li>
+</ol>
+<p class="more"><a href="#info">영상 정보</a><a href="#cuts">컷과 편집점</a><a href="#font">폰트 찾기</a><a href="#music">곡 찾기</a><a href="#ask">볼 때 묻는 질문</a></p>
+</nav>
+
+<section id="info">
+<h2>영상 정보</h2>
+<table class="info"><tbody>
+<tr><th>제목</th><td>POSTECH 학생들의 KAIST 방문 솔직후기!</td></tr><tr><th>올린 곳</th><td>KAIST</td></tr><tr><th>올린 날</th><td>20231019</td></tr><tr><th>조회수</th><td>37573</td></tr><tr><th>길이</th><td>49.7초</td></tr><tr><th>화면 크기</th><td>1080 x 1920</td></tr><tr><th>프레임 수(초당)</th><td>29.97</td></tr><tr><th>영상/소리 방식</th><td>h264 / opus</td></tr><tr><th>원본 주소</th><td>https://www.youtube.com/watch?v=IyGoQWBCanQ</td></tr>
+</tbody></table>
+</section>
+
+<section id="frame">
+<h2>1. 화면 틀</h2>
+<p class="lead">화면을 어떤 칸으로 나눴는지(로고, 제목, 영상 칸, 아래 안내)와 크기, 색, 위치입니다.</p>
+<p><img class="big" src="first-frame.png" alt="첫 화면"></p>
+<table><thead><tr><th>무엇이 보이나</th><th>잰 값 / 확인한 내용</th><th>근거</th></tr></thead><tbody>
+<tr><td>세로 화면의 크기</td><td>1080&#215;1920, 29.97fps</td><td><a href="first-frame.png"><img class="ev" src="first-frame.png" alt="근거 사진"></a><span class="tag">analysis.json</span></td></tr><tr><td>고정된 위쪽 제목 영역과 아래쪽 안내 문구</td><td>검은 바탕에 KAIST 로고와 흰색&#183;청록색 제목이 있고, 아래에는 ‘↓ 풀영상은 KAIST 채널’ 문구가 유지됩니다. 실제 영상은 가운데 가로 띠 영역에 들어갑니다.</td><td><a href="first-frame.png"><img class="ev" src="first-frame.png" alt="근거 사진"></a><a href="contact-sheet.jpg"><img class="ev" src="contact-sheet.jpg" alt="근거 사진"></a></td></tr>
+
+</tbody></table>
+</section>
+
+<section id="visual">
+<h2>2. 시각 요소</h2>
+<p class="lead">영상, 사진, 그림 같은 화면 속 그림이 어떤 것으로 어떻게 쓰였는지입니다. 아래는 컷마다 첫 화면을 모은 표입니다(왼쪽 위부터 번호 순서).</p>
+<p><a href="contact-sheet.jpg"><img class="big" src="contact-sheet.jpg" alt="컷 모음표"></a></p>
+<table><thead><tr><th>무엇이 보이나</th><th>잰 값 / 확인한 내용</th><th>근거</th></tr></thead><tbody>
+<tr><td>가운데 영상</td><td>행사장 과자 탑으로 시작해 단체&#183;인터뷰 장면, 기타를 연주하며 노래하는 장면, 남학생 인터뷰로 이어지는 현장 촬영입니다.</td><td><a href="contact-sheet.jpg"><img class="ev" src="contact-sheet.jpg" alt="근거 사진"></a><a href="frames/cut-001.jpg"><img class="ev" src="frames/cut-001.jpg" alt="근거 사진"></a><a href="frames/cut-008.jpg"><img class="ev" src="frames/cut-008.jpg" alt="근거 사진"></a><a href="frames/cut-009.jpg"><img class="ev" src="frames/cut-009.jpg" alt="근거 사진"></a></td></tr><tr><td>인터뷰 장면 구성</td><td>두 여학생 인터뷰 뒤 짧은 ‘NG’ 화면이 나오고, 다시 여학생 답변과 남학생 인터뷰로 넘어갑니다.</td><td><a href="frames/cut-003.jpg"><img class="ev" src="frames/cut-003.jpg" alt="근거 사진"></a><a href="frames/cut-005.jpg"><img class="ev" src="frames/cut-005.jpg" alt="근거 사진"></a><a href="frames/cut-006.jpg"><img class="ev" src="frames/cut-006.jpg" alt="근거 사진"></a><a href="frames/cut-009.jpg"><img class="ev" src="frames/cut-009.jpg" alt="근거 사진"></a></td></tr>
+
+</tbody></table>
+</section>
+
+<section id="text">
+<h2>3. 글자 (제목 글자, 자막)</h2>
+<p class="lead">화면에 얹힌 글자입니다. 제목 같은 글자와, 하는 말을 옮겨 적은 자막의 내용, 색, 크기, 위치, 나타나는 시간입니다.</p>
+<table><thead><tr><th>무엇이 보이나</th><th>잰 값 / 확인한 내용</th><th>근거</th></tr></thead><tbody>
+<tr><td>고정 제목</td><td>‘POSTECH 학생들의’는 흰색, ‘KAIST 방문 솔직후기’는 청록색 굵은 글씨로 크게 표시됩니다.</td><td><a href="title-crop.png"><img class="ev" src="title-crop.png" alt="근거 사진"></a><a href="first-frame.png"><img class="ev" src="first-frame.png" alt="근거 사진"></a></td></tr><tr><td>질문&#183;대사 자막</td><td>인터뷰 질문은 짙은 파란 띠에 흰 글씨로, 답변은 화면 아래에 흰 글씨로 표시됩니다. 일부 답변에는 이름과 학년 표기가 붙습니다.</td><td><a href="frames/cut-003.jpg"><img class="ev" src="frames/cut-003.jpg" alt="근거 사진"></a><a href="frames/cut-006.jpg"><img class="ev" src="frames/cut-006.jpg" alt="근거 사진"></a><a href="frames/cut-009.jpg"><img class="ev" src="frames/cut-009.jpg" alt="근거 사진"></a></td></tr><tr><td>고정 안내</td><td>화면 아래쪽에 ‘↓ 풀영상은 KAIST 채널’ 문구가 계속 보입니다.</td><td><a href="first-frame.png"><img class="ev" src="first-frame.png" alt="근거 사진"></a></td></tr>
+
+</tbody></table>
+</section>
+
+<section id="speech">
+<h2>4. 말소리 (대사, 나레이션)</h2>
+<p class="lead">사람이 하는 말입니다. 누가, 어떤 말투와 빠르기로, 언제부터 언제까지 말하는지 적습니다.</p>
+
+<div class="hint"><b>소리 측정 (세 가지 소리가 섞인 전체 값)</b><br>분석 프로그램은 말소리, 배경 음악, 효과음을 따로 갈라서 잴 수 없습니다. 아래 값은 셋이 합쳐진 소리 전체의 값입니다. 각각 무엇이 들어 있는지는 12초 소리 조각을 직접 들어 보고 적습니다.</div>
+<table class="info"><tbody>
+<tr><th>통합 음량</th><td>-18.7 LUFS</td></tr>
+<tr><th>소리 폭(LRA)</th><td>6.0 LU</td></tr>
+<tr><th>가장 큰 소리(피크)</th><td>-3.1 dBFS</td></tr>
+</tbody></table>
+<p class="muted">참고: KAIST 공식 쇼츠 솔직후기는 약 -18.7 LUFS(2026-11-15 같은 방법으로 잼). 값이 클수록(0에 가까울수록) 큰 소리입니다.</p>
+
+<p>0.5초 이상 소리가 거의 없는 구간은 없었습니다.</p>
+
+
+<audio controls src="audio-clip.mp3"></audio>
+<table><thead><tr><th>무엇이 보이나</th><th>잰 값 / 확인한 내용</th><th>근거</th></tr></thead><tbody>
+<tr><td>말하는 사람과 방식</td><td>화면에는 진행자의 질문과 POSTECH 학생들의 답변이 보이며, 두 여학생과 남학생 인터뷰가 이어집니다. 정확한 대사와 음성 시작&#183;끝 시각은 귀로 확인 필요.</td><td><a href="frames/cut-003.jpg"><img class="ev" src="frames/cut-003.jpg" alt="근거 사진"></a><a href="frames/cut-006.jpg"><img class="ev" src="frames/cut-006.jpg" alt="근거 사진"></a><a href="frames/cut-009.jpg"><img class="ev" src="frames/cut-009.jpg" alt="근거 사진"></a><audio controls src="audio-clip.mp3"></audio></td></tr>
+
+</tbody></table>
+<p class="muted">말소리만 따로 잰 값은 없습니다. 위 측정은 전체 소리입니다.</p>
+</section>
+
+<section id="bgm">
+<h2>5. 배경 음악</h2>
+<p class="lead">말 뒤에 깔리는 음악입니다. 있는지, 어떤 분위기인지, 말소리보다 작은지 적습니다. 음악이 있는지는 프로그램이 판단하지 못하니 소리 조각을 들어 보고 사람이 정합니다. 곡 이름 찾는 방법은 아래 &quot;곡 찾기&quot;에 있습니다.</p>
+<audio controls src="audio-clip.mp3"></audio>
+<table><thead><tr><th>무엇이 보이나</th><th>잰 값 / 확인한 내용</th><th>근거</th></tr></thead><tbody>
+<tr><td>음악 유무와 분위기</td><td>측정된 소리 수치만으로는 음악을 말소리와 분리할 수 없습니다. audio-clip.mp3를 재생해 귀로 확인 필요.</td><td><audio controls src="audio-clip.mp3"></audio><span class="tag">analysis.json</span></td></tr><tr><td>전체 소리 측정값</td><td>통합 음량 -18.7 LUFS, 음량 범위 6.0 LU, 최고 음량 -3.1 dBFS. 말소리&#183;음악&#183;효과음이 섞인 전체 값입니다.</td><td><span class="tag">analysis.json</span></td></tr>
+
+</tbody></table>
+<p class="muted">배경 음악만 따로 잰 값은 없습니다. 4번 말소리 칸의 전체 소리 측정을 참고하세요.</p>
+</section>
+
+<section id="sfx">
+<h2>6. 효과음</h2>
+<p class="lead">짧게 들어가는 소리입니다(전환할 때의 휙 소리, 강조할 때의 띵 소리 등). 어느 시각에 어떤 소리가 들어가는지 적습니다. 효과음은 프로그램이 찾아내지 못하니 영상을 보고 들으며 사람이 적습니다.</p>
+<table><thead><tr><th>무엇이 보이나</th><th>잰 값 / 확인한 내용</th><th>근거</th></tr></thead><tbody>
+<tr><td>짧은 효과음</td><td>효과음이 있는지와 나오는 시점은 audio-clip.mp3 재생 후 귀로 확인 필요.</td><td><audio controls src="audio-clip.mp3"></audio></td></tr>
+
+</tbody></table>
+<p class="muted">효과음만 따로 잰 값은 없습니다.</p>
+</section>
+
+<section id="cuts">
+<h2>컷과 편집점 (분석에 쓰는 말)</h2>
+<p><b>컷 11개, 평균 4.52초, 가운데 값 4.77초, 가장 짧은 컷 0.83초, 가장 긴 컷 9.85초</b></p>
+<p class="lead">이 칸은 영상의 구성 요소가 아니라 영상을 분석할 때 쓰는 말입니다. 컷은 화면이 바뀌는 한 토막이고, 편집점은 컷과 컷 사이의 경계입니다. 장면은 뜻으로 묶은 컷 몇 개입니다. 컷의 길이와 순서가 도입, 전개, 강조, 마무리로 어떻게 이어지는지 봅니다. 컷은 화면이 확 바뀌는 곳을 프로그램이 찾은 것이라 서서히 바뀌는 전환은 놓칠 수 있습니다.</p>
+<table><thead><tr><th>무엇이 보이나</th><th>잰 값 / 확인한 내용</th><th>근거</th></tr></thead><tbody>
+<tr><td>전체 컷</td><td>49.694초 영상에서 11컷을 찾았습니다. 평균 4.518초, 중앙값 4.771초이며 가장 짧은 컷은 0.834초, 가장 긴 컷은 9.854초입니다.</td><td><a href="contact-sheet.jpg"><img class="ev" src="contact-sheet.jpg" alt="근거 사진"></a><span class="tag">analysis.json</span></td></tr><tr><td>도입과 전개</td><td>도입은 0~3.837초의 과자 탑과 행사 풍경 두 컷입니다. 3.837초부터 인터뷰가 이어지고, 16.116~16.950초에 0.834초짜리 ‘NG’ 화면이 잠깐 끼어듭니다.</td><td><a href="frames/cut-001.jpg"><img class="ev" src="frames/cut-001.jpg" alt="근거 사진"></a><a href="frames/cut-002.jpg"><img class="ev" src="frames/cut-002.jpg" alt="근거 사진"></a><a href="frames/cut-005.jpg"><img class="ev" src="frames/cut-005.jpg" alt="근거 사진"></a><span class="tag">analysis.json</span></td></tr><tr><td>강조와 마무리</td><td>중간에는 기타 연주 장면(28.528~31.532초)으로 분위기를 바꾸고, 31.532초부터 남학생 인터뷰 세 컷으로 마무리합니다. 마지막 컷은 9.854초로 답변을 충분히 보여 줍니다.</td><td><a href="frames/cut-008.jpg"><img class="ev" src="frames/cut-008.jpg" alt="근거 사진"></a><a href="frames/cut-009.jpg"><img class="ev" src="frames/cut-009.jpg" alt="근거 사진"></a><a href="frames/cut-011.jpg"><img class="ev" src="frames/cut-011.jpg" alt="근거 사진"></a><span class="tag">analysis.json</span></td></tr><tr><td>컷이 바뀌는 속도</td><td>짧은 도입 뒤 3~8초 길이 인터뷰 컷이 이어지고, 짧은 ‘NG’ 컷이 중간에 리듬을 끊습니다.</td><td><a href="contact-sheet.jpg"><img class="ev" src="contact-sheet.jpg" alt="근거 사진"></a><span class="tag">analysis.json</span></td></tr>
+
+</tbody></table>
+<details open><summary>컷 목록</summary>
+<table><thead><tr><th>번호</th><th>시작(초)</th><th>끝(초)</th><th>길이(초)</th><th>첫 화면</th></tr></thead><tbody>
+<tr><td>1</td><td>0.00</td><td>1.54</td><td>1.54</td><td><a href="frames/cut-001.jpg"><img class="thumb" src="frames/cut-001.jpg" alt="컷 1"></a></td></tr><tr><td>2</td><td>1.54</td><td>3.84</td><td>2.30</td><td><a href="frames/cut-002.jpg"><img class="thumb" src="frames/cut-002.jpg" alt="컷 2"></a></td></tr><tr><td>3</td><td>3.84</td><td>8.61</td><td>4.77</td><td><a href="frames/cut-003.jpg"><img class="thumb" src="frames/cut-003.jpg" alt="컷 3"></a></td></tr><tr><td>4</td><td>8.61</td><td>16.12</td><td>7.51</td><td><a href="frames/cut-004.jpg"><img class="thumb" src="frames/cut-004.jpg" alt="컷 4"></a></td></tr><tr><td>5</td><td>16.12</td><td>16.95</td><td>0.83</td><td><a href="frames/cut-005.jpg"><img class="thumb" src="frames/cut-005.jpg" alt="컷 5"></a></td></tr><tr><td>6</td><td>16.95</td><td>22.32</td><td>5.37</td><td><a href="frames/cut-006.jpg"><img class="thumb" src="frames/cut-006.jpg" alt="컷 6"></a></td></tr><tr><td>7</td><td>22.32</td><td>28.53</td><td>6.21</td><td><a href="frames/cut-007.jpg"><img class="thumb" src="frames/cut-007.jpg" alt="컷 7"></a></td></tr><tr><td>8</td><td>28.53</td><td>31.53</td><td>3.00</td><td><a href="frames/cut-008.jpg"><img class="thumb" src="frames/cut-008.jpg" alt="컷 8"></a></td></tr><tr><td>9</td><td>31.53</td><td>36.37</td><td>4.84</td><td><a href="frames/cut-009.jpg"><img class="thumb" src="frames/cut-009.jpg" alt="컷 9"></a></td></tr><tr><td>10</td><td>36.37</td><td>39.84</td><td>3.47</td><td><a href="frames/cut-010.jpg"><img class="thumb" src="frames/cut-010.jpg" alt="컷 10"></a></td></tr><tr><td>11</td><td>39.84</td><td>49.69</td><td>9.85</td><td><a href="frames/cut-011.jpg"><img class="thumb" src="frames/cut-011.jpg" alt="컷 11"></a></td></tr>
+</tbody></table>
+</details>
+</section>
+
+<section id="font">
+<h2>폰트 찾기</h2>
+<p class="lead">제목 글자가 있는 부분을 잘라 둔 사진입니다. 글꼴 이름은 사진만으로 확정할 수 없고, 아래 순서로 후보를 좁힙니다.</p>
+<p><img class="big" src="title-crop.png" alt="제목 부분"></p>
+<ol>
+<li>이 사진을 Codex 대화창에 붙여 넣고 <code>이 제목 글꼴과 닮은 무료 글꼴 후보 5개를 알려줘</code>라고 말합니다. 답은 후보일 뿐 정답이 아닙니다.</li>
+<li>후보 이름을 <b>눈누(noonnu.cc)</b>에서 검색해 모양을 눈으로 비교하고, 글꼴 상세 페이지의 <b>라이선스(상업 이용, 재배포)</b>를 읽습니다.</li>
+<li>글꼴 이미지 검색 서비스(예: 산돌구름 글꼴 찾기, WhatTheFont, WhatFontIs)에 이 사진을 올려 볼 수 있습니다. 영어 글꼴 위주인 서비스가 많고, 무료 범위와 로그인 여부는 직접 확인해야 합니다. 외부 사이트에 올리는 것이므로 공개된 영상의 화면만 올립니다.</li>
+<li>가장 확실한 방법: 후보 글꼴로 같은 문구를 써서 원본 사진 위에 겹쳐 봅니다. Codex에게 <code>후보 글꼴로 같은 문구를 그려서 원본과 비교해줘</code>라고 부탁하세요.</li>
+</ol>
+<p class="hint">무료로 쓸 수 있는 글꼴 예: Gmarket Sans(SIL 오픈 폰트 라이선스, 이 프로젝트에 들어 있음), Pretendard. 어떤 글꼴이든 쓰기 전에 라이선스 문서를 직접 읽으세요.</p>
+<table><thead><tr><th>후보</th><th>확신</th><th>이유</th></tr></thead><tbody>
+<tr><td>굵은 고딕 계열 (예: Pretendard ExtraBold)</td><td>낮음</td><td>제목의 획이 두껍고 단순한 고딕 형태입니다. 이미지로는 정확한 글꼴을 구분할 수 없습니다.</td></tr>
+
+</tbody></table>
+</section>
+
+<section id="music">
+<h2>곡 찾기</h2>
+<p class="lead">영상 속 12초를 잘라 둔 소리 조각입니다. 배경 음악만 들리는 구간이 좋습니다.</p>
+<audio controls src="audio-clip.mp3"></audio>
+<p>음악을 듣고 확인하기 전에는 곡을 특정할 수 없습니다. audio-clip.mp3를 직접 듣고, 곡이 궁금하면 보고서의 곡 찾기 안내를 참고하세요. 외부 곡 찾기 사이트에는 사용자가 직접 올려야 합니다.</p>
+<ol>
+<li>유튜브 쇼츠라면 먼저 화면 아래의 <b>소리 이름</b>을 눌러 봅니다. 음원이 표시되는 영상이면 가장 빠릅니다.</li>
+<li>곡 식별 서비스에 소리 조각을 올려 봅니다: <b>AudD</b>(audd.io), <b>ACRCloud</b>(acrcloud.com). 둘 다 계정이 필요하고 무료 범위가 정해져 있으며, 정책은 바뀔 수 있습니다. 외부에 올리는 것이므로 공개된 영상의 소리만 올립니다.</li>
+<li>결과가 없다고 해서 무료 음원이라는 뜻은 아닙니다. 데이터에 없는 곡일 뿐입니다.</li>
+<li>곡 이름을 알아내도 <b>써도 된다는 허락은 아닙니다</b>. 허락(라이선스)은 따로 확인합니다.</li>
+</ol>
+<h3>내 쇼츠에 쓸 음악, 효과음을 구하는 곳</h3>
+<ul>
+<li><b>공유마당</b>(gongu.copyright.or.kr): 곡마다 조건이 다릅니다. 공공누리 제1유형, CC BY처럼 상업 이용이 되는 것만 고르고, 출처 표시 조건을 지킵니다.</li>
+<li><b>YouTube 오디오 라이브러리</b>(YouTube Studio 안): 유튜브에 올릴 영상이면 저작권 클레임 위험이 낮은 편입니다. 다른 곳에 다시 쓸 때의 조건은 약관을 확인합니다.</li>
+<li><b>Freesound</b>(freesound.org): 효과음은 <b>CC0</b> 표시된 것만 씁니다.</li>
+<li>쓰지 않는 것: <b>CC BY-NC</b>(비영리 한정) 표시 음원. 게시하는 영상에는 쓰지 않습니다.</li>
+</ul>
+<p class="hint">미리 들어 있는 곡과 효과음 외에 음악과 효과음 파일을 더 넣지 않고, 새 파일은 <code>재료</code> 폴더에만 둡니다.</p>
+<h3>쓴 소리마다 남길 기록</h3>
+<table><thead><tr><th>곡/효과음 제목</th><th>만든 사람</th><th>받은 주소</th><th>라이선스 이름</th><th>상업 이용 가능 문구</th><th>출처 표시 문구</th><th>받은 날</th></tr></thead><tbody>
+<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</tbody></table>
+</section>
+
+<section id="ask">
+<h2>볼 때 묻는 질문</h2>
+<p class="lead">쇼츠를 볼 때마다 이 여섯 가지를 스스로에게 물어보세요. 설계도를 읽는 방법이자, 내 쇼츠를 점검하는 방법입니다.</p>
+<ol class="qa">
+<li>첫 장면이 관심을 끄는가?<br><span class="tag">답</span> 행사장 한가운데 높게 쌓인 과자를 보여 줘서 무엇인지 궁금하게 만듭니다.</li><li>가장 먼저 보이는 것은 무엇인가?<br><span class="tag">답</span> 고정된 KAIST 로고와 ‘POSTECH 학생들의 KAIST 방문 솔직후기’ 제목, 그리고 과자 탑입니다.</li><li>컷이 바뀌는 속도가 내용과 맞는가?<br><span class="tag">답</span> 인터뷰 답변은 몇 초씩 유지하고 중간에 짧은 NG 화면과 연주 장면을 넣어 리듬을 바꿉니다.</li><li>소리가 화면과 맞는가?<br><span class="tag">답</span> 말소리와 음악을 직접 듣지 않아 맞는지 확인할 수 없습니다.</li><li>자막이 핵심을 돕는가?<br><span class="tag">답</span> 질문과 답변 자막, 이름 표기가 인터뷰 내용을 따라가기 쉽게 돕습니다.</li><li>끝나고 남는 메시지는 무엇인가?<br><span class="tag">답</span> POSTECH 학생들이 KAIST 방문 경험과 두 학교에 대한 생각을 솔직하게 나눈다는 인상이 남습니다.</li>
+</ol>
+</section>
+
+<footer class="note">
+<p class="muted">이 보고서는 분석 도구가 잰 값과 Codex가 사진을 보고 적은 내용으로 만들었습니다. 사진으로 읽은 내용은 틀릴 수 있으니 중요한 값은 직접 확인하세요.</p>
+</footer>
+</main>
+</body>
+</html>

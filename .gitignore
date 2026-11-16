@@ -2,6 +2,7 @@
 재료/*
 !재료/README.md
 !재료/sfx/
+!재료/bgm/
 결과/*
 !결과/README.md
 *.mp4
@@ -10,6 +11,8 @@
 *.mp3
 !재료/sfx/*.mp3
 !재료/sfx/sources.json
+!재료/bgm/*.mp3
+!재료/bgm/sources.json
 *.m4a
 
 # Prompt logs written by local agent hooks
@@ -19,3 +22,6 @@ prompts/
 .env
 .env.*
 *.env
+
+!레퍼런스/
+!레퍼런스/**/*.mp3

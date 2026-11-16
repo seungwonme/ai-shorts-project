@@ -161,7 +161,7 @@ Never show one picture for the whole short. Give each script line a screen that 
 
 ## BGM (optional, both flows)
 
-You never search for, download, or pick music. The user picks it. 17 songs are preinstalled in `재료/bgm/`: let the user choose from the preinstalled list (`재료/bgm/곡목록.md`). If that file is missing (the project came from a GitHub zip), point the user to the separate BGM zip (`ai-shorts-bgm-17.zip`, unpack into `재료/bgm/`). A song the user brings goes in `재료/` (for example `재료/배경음.mp3`). Music files are never copied into this repository (`.gitignore` skips mp3/wav/m4a; the BGM mp3 files are not tracked).
+You never search for, download, or pick music. The user picks it. 17 songs are preinstalled in `재료/bgm/`: let the user choose from the preinstalled list (`재료/bgm/곡목록.md`). The folder ships with the GitHub zip and is tracked in git. A song the user brings goes in `재료/` (for example `재료/배경음.mp3`). Do not add other music files to the repository: `.gitignore` skips mp3/wav/m4a except the preinstalled `재료/bgm/` and `재료/sfx/` files.
 
 1. Ask only if the user mentions background music. Otherwise leave BGM out (the approval message says `없음`).
 2. The user tells you the file name and the facts they checked on the song's page: title, creator, URL, license name (and credit wording if the license asks for one), download date. Never guess a license from a song's name or from what you remember; if the user does not know, the song is not approved yet.
