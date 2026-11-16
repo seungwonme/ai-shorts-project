@@ -1266,6 +1266,21 @@ try {
             $capLines += ("기사 화면 캡처: {0}, {1}, 캡처 {2}" -f ([string]$sjo2.page_capture.source), ([string]$sjo2.page_capture.url), ([string]$sjo2.page_capture.captured_at))
         }
     }
+    # 원본 영상 표기: video 조각이 collect-video.ps1 로 받은 영상이면 같은 폴더의 meta.json 에서 제목, 올린 곳, 주소, 라이선스를 적는다
+    $vidLines = @(); $vidSeen = @{}
+    foreach ($sg in $segs) {
+        if ([string]$sg.type -ne "video") { continue }
+        $mj = Join-Path (Split-Path -Parent $sg.abs) "meta.json"
+        if (-not (Test-Path -LiteralPath $mj)) { continue }
+        try { $mo = Get-Content -LiteralPath $mj -Raw -Encoding UTF8 | ConvertFrom-Json } catch { continue }
+        $vu = [string](Get-Opt $mo "webpage_url" "")
+        if (-not $vu -or $vidSeen.ContainsKey($vu)) { continue }
+        $vidSeen[$vu] = $true
+        $vl = '원본 영상: "{0}" - {1}, {2}' -f ([string](Get-Opt $mo "title" "")), ([string](Get-Opt $mo "channel" (Get-Opt $mo "uploader" ""))), $vu
+        $vlic = ([string](Get-Opt $mo "license" "")).Trim()
+        if ($vlic) { $vl += ", 라이선스: $vlic" }
+        $vidLines += $vl
+    }
     # BGM 표기: 곡 기록(sources.json 의 bgm)에서 곡명, 만든 사람, 출처, 라이선스를 적는다. attribution_required 가 yes 이면 필수, 아니면 "표기 선택"
     $bgmLine = $null
     if ($bgmPath -and $bgmEntry) {
@@ -1276,7 +1291,7 @@ try {
         if (([string](Get-Opt $bgmEntry "attribution_required" "no")).Trim().ToLower() -eq "yes") { $bgmLine += " (표기 필수" + $(if ($attrTxt) { ": $attrTxt" } else { "" }) + ")" }
         else { $bgmLine += " (표기 선택)" }
     }
-    if ($ccbyUsed.Count -gt 0 -or $capLines.Count -gt 0 -or $bgmLine -or $sfxEntries.Count -gt 0) {
+    if ($ccbyUsed.Count -gt 0 -or $capLines.Count -gt 0 -or $vidLines.Count -gt 0 -or $bgmLine -or $sfxEntries.Count -gt 0) {
         $cl = @("영상을 올릴 때 설명란에 아래 표기를 붙여 주세요.", "")
         foreach ($en in $usedUniq) {
             $line = '"{0}" by {1}, {2}, {3}' -f ([string]$en.title), ([string]$en.creator), ([string]$en.license), ([string](Get-Opt $en "source_page" ""))
@@ -1284,6 +1299,7 @@ try {
             $cl += $line
         }
         $cl += $capLines
+        $cl += $vidLines
         if ($bgmLine) { $cl += $bgmLine }
         foreach ($kx in @($sfxEntries.Keys | Sort-Object)) {
             $ex = $sfxEntries[$kx]
