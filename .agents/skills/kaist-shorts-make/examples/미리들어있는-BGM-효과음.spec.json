@@ -1,0 +1,12 @@
+{
+  "_설명": "형식 참고용 예시 (미리 들어 있는 곡 재료/bgm/013_Snack_Time.mp3 와 효과음 재료/sfx/pop-10.mp3 사용). 사진 경로는 가짜입니다. 실제 사진으로 바꿔 쓰세요.",
+  "output": "결과/예시-미리들어있음/shorts.mp4",
+  "title": [{"text": "미리 들어 있는", "color": "white"}, {"text": "곡과 효과음", "color": "teal"}],
+  "bottom_text": "↓ 자세한 소식은 KAIST 뉴스",
+  "segments": [
+    {"type": "image", "src": "재료/예시/img-01.jpg", "duration": 6}
+  ],
+  "audio": {"mode": "original", "bgm": "재료/bgm/013_Snack_Time.mp3", "bgm_db": -20},
+  "sfx": [{"file": "재료/sfx/pop-10.mp3", "at": 1.0, "volume_db": -13}],
+  "loudness": {"target": -19, "true_peak": -1.5}
+}

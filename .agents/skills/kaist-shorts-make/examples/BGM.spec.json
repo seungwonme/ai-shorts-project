@@ -1,5 +1,5 @@
 {
-  "_설명": "형식 참고용 예시 4 (배경 음악 BGM 넣기). 상량식 예시에 audio.bgm을 더한 것입니다. 곡 파일(재료/배경음.mp3)은 저장소에 없는 가짜 경로이며, 사람이 직접 고르고 쓸 권리를 확인해 재료/ 폴더에 넣습니다(Codex는 곡을 찾거나 받지 않습니다). render.ps1은 같은 폴더의 재료/sources.json 의 bgm 항목에 곡 이름, 만든 사람, URL, 라이선스, 받은 날이 적혀 있고 human_approved가 yes일 때만 렌더합니다. sources.json 예: {\"bgm\":[{\"file\":\"배경음.mp3\",\"title\":\"곡 이름\",\"creator\":\"만든 사람\",\"url\":\"https://...\",\"license\":\"라이선스 이름\",\"downloaded\":\"2026-11-16\",\"human_approved\":\"yes\"}]}. bgm_db는 말소리보다 낮추는 양(기본 -20), bgm_fade_in/out은 페이드 길이(기본 1초, 2초)입니다. 곡이 영상보다 짧으면 되풀이하고 길면 자릅니다. 나머지 경로는 상량식 예시와 같은 가짜입니다.",
+  "_설명": "형식 참고용 예시 4 (배경 음악 BGM 넣기). 상량식 예시에 audio.bgm을 더한 것입니다. 곡 파일(재료/배경음.mp3)은 저장소에 없는 가짜 경로이며, 사람이 직접 고르고 쓸 권리를 확인해 재료/ 폴더에 넣습니다(Codex는 곡을 찾거나 받지 않습니다). render.ps1은 곡 파일과 같은 폴더의 sources.json(미리 들어 있는 곡은 재료/bgm/sources.json)의 bgm 항목에 곡 이름, 만든 사람, URL, 라이선스, 받은 날이 적혀 있고 human_approved가 yes일 때만 렌더합니다. sources.json 예: {\"bgm\":[{\"file\":\"배경음.mp3\",\"title\":\"곡 이름\",\"creator\":\"만든 사람\",\"url\":\"https://...\",\"license\":\"라이선스 이름\",\"downloaded\":\"2026-11-16\",\"human_approved\":\"yes\"}]}. bgm_db는 말소리보다 낮추는 양(기본 -20), bgm_fade_in/out은 페이드 길이(기본 1초, 2초)입니다. 곡이 영상보다 짧으면 되풀이하고 길면 자릅니다. 나머지 경로는 상량식 예시와 같은 가짜입니다.",
   "output": "결과/예시-BGM/shorts.mp4",
   "title": [
     {

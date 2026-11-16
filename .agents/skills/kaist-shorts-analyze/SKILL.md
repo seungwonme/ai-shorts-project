@@ -79,6 +79,8 @@ Rules for writing findings:
 powershell -NoProfile -ExecutionPolicy Bypass -File .agents/skills/kaist-shorts-analyze/scripts/analyze.ps1 -Report -Dir "결과/<yymmdd>-분석-<name>"
 ```
 
+Rule: never write or edit `report.html` by hand or with another tool; always build it with `-Report`. The look and structure live in one file, `assets/report-template.html` (placeholders `{{name}}` and `<!-- BEGIN:name -->...<!-- END:name -->` repeat blocks, documented in the comment at its top). To change the look, edit that template only, never the script's code. The script fills it with HTML-escaped values, stops with a plain Korean message if a placeholder is missing or left over, and checks that every section (info, frame, visual, text, speech, bgm, sfx, cuts, font, music, ask) is in the result.
+
 This writes `report.html` (one self-contained page, relative image and audio paths, no network needed) and opens it. Sections: the six elements in the order above (with a contact sheet under 시각 요소 and a plain note that the sound numbers are mixed), the separate "컷과 편집점" section (cut statistics and the cut table), then "폰트 찾기" (title crop and how to search), "곡 찾기" (12-second clip, recognition services AudD and ACRCloud, where to get free music, and a license record table). Build the report again after any edit to `findings.json`.
 
 ## Final answer

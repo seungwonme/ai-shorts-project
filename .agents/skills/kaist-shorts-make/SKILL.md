@@ -161,11 +161,11 @@ Never show one picture for the whole short. Give each script line a screen that 
 
 ## BGM (optional, both flows)
 
-You never search for, download, or pick music. The user does that and puts the file in `재료/` (for example `재료/배경음.mp3`). Music files are never copied into this repository (`.gitignore` skips mp3/wav/m4a).
+You never search for, download, or pick music. The user picks it. 17 songs are preinstalled in `재료/bgm/`: let the user choose from the preinstalled list (`재료/bgm/곡목록.md`). If that file is missing (the project came from a GitHub zip), point the user to the separate BGM zip (`ai-shorts-bgm-17.zip`, unpack into `재료/bgm/`). A song the user brings goes in `재료/` (for example `재료/배경음.mp3`). Music files are never copied into this repository (`.gitignore` skips mp3/wav/m4a; the BGM mp3 files are not tracked).
 
 1. Ask only if the user mentions background music. Otherwise leave BGM out (the approval message says `없음`).
 2. The user tells you the file name and the facts they checked on the song's page: title, creator, URL, license name (and credit wording if the license asks for one), download date. Never guess a license from a song's name or from what you remember; if the user does not know, the song is not approved yet.
-3. Write those facts into `재료/sources.json` (the same folder as the song file), in the `bgm` list. Create the file if there is none; if it exists, add to it without touching the other entries:
+3. Write those facts into the `sources.json` in the same folder as the song file (`재료/bgm/sources.json` for the preinstalled songs, whose records already exist with `human_approved: "no"`; only `013_Snack_Time.mp3` is `yes`), in the `bgm` list. Create the file if there is none; if it exists, add to it without touching the other entries:
 
 ```json
 {"bgm": [{"file": "배경음.mp3", "title": "곡 이름", "creator": "만든 사람", "url": "https://...", "license": "라이선스 이름", "downloaded": "2026-11-16", "human_approved": "no"}]}

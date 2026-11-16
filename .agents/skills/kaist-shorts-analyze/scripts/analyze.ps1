@@ -122,31 +122,119 @@ function Open-File([string]$path) {
 
 # =========================================================================================
 # 3단계: 보고서
+#   report.html 의 모양은 assets\report-template.html 한 파일이 정합니다(정본). 이 스크립트는 값을 채우기만 합니다.
+#   - 자리 표시자 {{이름}} 은 한 번만 나오는 값, <!-- BEGIN:이름 --> ... <!-- END:이름 --> 은 행마다 되풀이하는 블록입니다.
+#   - 사용자 글(findings.json 등)은 모두 Esc 로 HTML 이스케이프한 뒤 채웁니다.
 # =========================================================================================
-function Esc([string]$s) { return [Net.WebUtility]::HtmlEncode($s) }
+# 중괄호까지 바꿔서, 사용자 글 안의 "{{x}}" 가 자리 표시자로 오해되지 않게 한다
+function Esc([string]$s) {
+    if ($null -eq $s) { return "" }
+    return ([Net.WebUtility]::HtmlEncode($s)).Replace("{", "&#123;")
+}
 
-function Items-Html($group) {
-    if ($null -eq $group) { return "<p class='muted'>아직 채우지 않았습니다.</p>" }
-    $rows = ""
+function N2($v) { return ([double]$v).ToString("0.00", $inv) }
+
+# 스크립트가 채우는 모든 이름. 템플릿에 하나라도 없으면 오류로 멈춘다(템플릿이 망가졌다는 뜻).
+$script:REPORT_NAMES = @(
+    "title", "summary", "first_frame", "contact_sheet", "title_crop", "cut_summary", "lufs", "lra", "peak", "clip_src", "music_note",
+    "label", "value", "what", "ev", "index", "start", "end", "length", "cut_frame", "duration", "name", "confidence", "why", "question", "answer",
+    "summary_block", "meta_rows", "ev_image", "ev_audio", "ev_tag", "cut_rows", "sound_measured", "sound_unavailable",
+    "silence_has", "silence_rows", "silence_none", "clip_audio", "music_note_block", "font_rows", "font_empty",
+    "license_rows", "question_rows", "answer_given", "answer_missing",
+    "items_frame", "items_visual", "items_text", "items_speech", "items_music", "items_sfx", "items_cuts",
+    "items_frame_empty", "items_visual_empty", "items_text_empty", "items_speech_empty", "items_music_empty", "items_sfx_empty", "items_cuts_empty"
+)
+
+# 보고서에 꼭 있어야 하는 섹션: id 와 h2 제목
+$script:REPORT_SECTIONS = @(
+    @("info", "영상 정보"), @("frame", "1. 화면 틀"), @("visual", "2. 시각 요소"), @("text", "3. 글자 (제목 글자, 자막)"),
+    @("speech", "4. 말소리 (대사, 나레이션)"), @("bgm", "5. 배경 음악"), @("sfx", "6. 효과음"),
+    @("cuts", "컷과 편집점 (분석에 쓰는 말)"), @("font", "폰트 찾기"), @("music", "곡 찾기"), @("ask", "볼 때 묻는 질문")
+)
+
+function New-List { return , (New-Object System.Collections.ArrayList) }
+
+# 값 찾기: 안쪽 행부터 바깥쪽 순서로 찾는다. 없으면 $null. 목록(블록 행)은 그대로 돌려준다.
+function Find-Key([string]$name, [object[]]$chain) {
+    foreach ($h in $chain) {
+        if ($h.ContainsKey($name)) {
+            $v = $h[$name]
+            if ($v -is [System.Collections.IList]) { return , $v }
+            return $v
+        }
+    }
+    return $null
+}
+
+function Fill-Scalars([string]$text, [object[]]$chain) {
+    $sb = New-Object Text.StringBuilder
+    $pos = 0
+    foreach ($m in [regex]::Matches($text, '\{\{(\w+)\}\}')) {
+        [void]$sb.Append($text.Substring($pos, $m.Index - $pos))
+        $v = Find-Key $m.Groups[1].Value $chain
+        if ($v -is [string]) { [void]$sb.Append($v) } else { [void]$sb.Append($m.Value) }   # 모르는 자리는 그대로 두고, 마지막 점검에서 잡는다
+        $pos = $m.Index + $m.Length
+    }
+    [void]$sb.Append($text.Substring($pos))
+    return $sb.ToString()
+}
+
+function Expand-Tpl([string]$text, [object[]]$chain) {
+    $sb = New-Object Text.StringBuilder
+    $pos = 0
+    foreach ($m in [regex]::Matches($text, '<!-- BEGIN:(\w+) -->(.*?)<!-- END:\1 -->', [Text.RegularExpressions.RegexOptions]::Singleline)) {
+        [void]$sb.Append((Fill-Scalars $text.Substring($pos, $m.Index - $pos) $chain))
+        $rows = Find-Key $m.Groups[1].Value $chain
+        if ($rows -is [System.Collections.IList]) {
+            foreach ($r in $rows) { [void]$sb.Append((Expand-Tpl $m.Groups[2].Value (@($r) + $chain))) }
+        } else { [void]$sb.Append($m.Value) }   # 모르는 블록은 그대로 두고, 마지막 점검에서 잡는다
+        $pos = $m.Index + $m.Length
+    }
+    [void]$sb.Append((Fill-Scalars $text.Substring($pos) $chain))
+    return $sb.ToString()
+}
+
+# 요소별 항목 표의 행 목록: 한 행 = what, value, 근거(ev_image / ev_audio / ev_tag)
+function Item-Rows($group) {
+    $rows = New-List
+    if ($null -eq $group) { return , $rows }
     foreach ($it in @(Get-Opt $group "items" @())) {
         $what = [string](Get-Opt $it "what" ""); $value = [string](Get-Opt $it "value" "")
         if (-not $what -and -not $value) { continue }
-        $ev = ""
-        $evRaw = Get-Opt $it "evidence" @()
-        foreach ($e in @($evRaw)) {
+        $img = New-List; $aud = New-List; $tag = New-List
+        foreach ($e in @(Get-Opt $it "evidence" @())) {
             $e = [string]$e
             if (-not $e) { continue }
-            if ($e -match '\.(jpg|jpeg|png|gif)$') { $ev += "<a href='$(Esc $e)'><img class='ev' src='$(Esc $e)' alt='근거 사진'></a>" }
-            elseif ($e -match '\.(mp3|wav)$') { $ev += "<audio controls src='$(Esc $e)'></audio>" }
-            else { $ev += "<span class='tag'>$(Esc $e)</span>" }
+            # 바깥 주소(http:, javascript: 등)는 링크로 만들지 않고 글자로만 보여 준다. 근거는 결과 폴더 안의 상대 경로만 쓴다.
+            $isLocal = ($e -notmatch '^[A-Za-z][A-Za-z0-9+.\-]*:') -and ($e -notmatch '^[\\/]')
+            if ($isLocal -and $e -match '\.(jpg|jpeg|png|gif)$') { [void]$img.Add(@{ ev = (Esc $e) }) }
+            elseif ($isLocal -and $e -match '\.(mp3|wav)$') { [void]$aud.Add(@{ ev = (Esc $e) }) }
+            else { [void]$tag.Add(@{ ev = (Esc $e) }) }
         }
-        $rows += "<tr><td>$(Esc $what)</td><td>$(Esc $value)</td><td>$ev</td></tr>"
+        [void]$rows.Add(@{ what = (Esc $what); value = (Esc $value); ev_image = $img; ev_audio = $aud; ev_tag = $tag })
     }
-    if (-not $rows) { return "<p class='muted'>아직 채우지 않았습니다.</p>" }
-    return "<table><thead><tr><th>무엇이 보이나</th><th>잰 값 / 확인한 내용</th><th>근거</th></tr></thead><tbody>$rows</tbody></table>"
+    return , $rows
 }
 
 function Build-Report([string]$dir) {
+    # ---- 템플릿 읽기 (정본은 템플릿 하나) ----
+    $tplPath = [IO.Path]::Combine((Split-Path -Parent $PSScriptRoot), "assets", "report-template.html")
+    if (-not (Test-Path -LiteralPath $tplPath)) {
+        Fail "보고서 틀 파일을 찾지 못했습니다: $tplPath`n스킬 폴더(kaist-shorts-analyze)의 assets 폴더에 report-template.html 이 있어야 합니다. 폴더를 통째로 다시 받아 주세요."
+    }
+    $tpl = [IO.File]::ReadAllText($tplPath, [Text.Encoding]::UTF8)
+    $tpl = [regex]::Replace($tpl, '^\s*<!-- report-template.*?-->\s*', '', [Text.RegularExpressions.RegexOptions]::Singleline)   # 맨 위 설명 주석은 보고서에 넣지 않는다
+
+    # 템플릿에 스크립트가 채우는 자리가 모두 있는지 (하나라도 지워졌으면 멈춘다)
+    $found = @{}
+    foreach ($m in [regex]::Matches($tpl, '\{\{(\w+)\}\}')) { $found[$m.Groups[1].Value] = $true }
+    foreach ($m in [regex]::Matches($tpl, '<!-- BEGIN:(\w+) -->')) { $found[$m.Groups[1].Value] = $true }
+    $gone = @($script:REPORT_NAMES | Where-Object { -not $found.ContainsKey($_) })
+    if ($gone.Count -gt 0) {
+        Fail ("보고서 틀(report-template.html)에서 꼭 필요한 자리가 빠졌습니다: " + (($gone | ForEach-Object { $_ }) -join ", ") + "`n틀 파일을 직접 고친 경우 빠진 자리를 되살려 주세요. 파일: $tplPath")
+    }
+
+    # ---- 값 모으기 ----
     $a = Get-Content -LiteralPath (Join-Path $dir "analysis.json") -Raw -Encoding UTF8 | ConvertFrom-Json
     $fp = Join-Path $dir "findings.json"
     $fd = $null
@@ -155,130 +243,131 @@ function Build-Report([string]$dir) {
     $title = [string](Get-Opt $fd "title" "")
     if (-not $title) { $title = [string](Get-Opt $a.meta "title" $a.name) }
     $summary = [string](Get-Opt $fd "summary" "")
-
     $m = $a.meta
+
+    $ctx = @{}
+    $ctx.title = Esc $title
+    $ctx.first_frame = Esc ([string]$a.files.first_frame)
+    $ctx.contact_sheet = Esc ([string]$a.files.contact_sheet)
+    $ctx.title_crop = Esc ([string]$a.files.title_crop)
+
+    $sb = New-List
+    if ($summary) { [void]$sb.Add(@{ summary = (Esc $summary) }) }
+    $ctx.summary_block = $sb
+
+    # 영상 정보 표
     $metaRows = @(
         @("제목", (Get-Opt $m "title" "")), @("올린 곳", (Get-Opt $m "uploader" "")), @("올린 날", (Get-Opt $m "upload_date" "")),
-        @("조회수", (Get-Opt $m "view_count" "")), @("길이", ("{0:0.0}초" -f [double]$m.duration)),
+        @("조회수", (Get-Opt $m "view_count" "")), @("길이", ("{0}초" -f ([double]$m.duration).ToString("0.0", $inv))),
         @("화면 크기", ("{0} x {1}" -f $m.width, $m.height)), @("프레임 수(초당)", (Get-Opt $m "fps" "")),
         @("영상/소리 방식", ("{0} / {1}" -f (Get-Opt $m "video_codec" "-"), (Get-Opt $m "audio_codec" "소리 없음"))),
         @("원본 주소", (Get-Opt $a "source_url" "(내 컴퓨터의 파일)"))
     )
-    $metaHtml = ""
-    foreach ($r in $metaRows) { if ("$($r[1])" -ne "") { $metaHtml += "<tr><th>$(Esc $r[0])</th><td>$(Esc ([string]$r[1]))</td></tr>" } }
+    $ml = New-List
+    foreach ($r in $metaRows) { if ("$($r[1])" -ne "") { [void]$ml.Add(@{ label = (Esc ([string]$r[0])); value = (Esc ([string]$r[1])) }) } }
+    $ctx.meta_rows = $ml
+
+    # 요소별 항목 표 (6요소 + 컷과 편집점)
+    foreach ($k in @("frame", "visual", "text", "speech", "music", "sfx", "cuts")) {
+        $rows = Item-Rows (Get-Opt $g $k $null)
+        $ctx["items_$k"] = $rows
+        $empty = New-List
+        if ($rows.Count -eq 0) { [void]$empty.Add(@{}) }
+        $ctx["items_${k}_empty"] = $empty
+    }
 
     # 컷 표
-    $cutRows = ""
+    $cl = New-List
     foreach ($c in @($a.cuts)) {
-        $cutRows += ("<tr><td>{0}</td><td>{1:0.00}</td><td>{2:0.00}</td><td>{3:0.00}</td><td><a href='{4}'><img class='thumb' src='{4}' alt='컷 {0}'></a></td></tr>" -f $c.index, [double]$c.start, [double]$c.end, [double]$c.length, (Esc $c.frame))
+        [void]$cl.Add(@{ index = (Esc ([string]$c.index)); start = (N2 $c.start); end = (N2 $c.end); length = (N2 $c.length); cut_frame = (Esc ([string]$c.frame)) })
     }
+    $ctx.cut_rows = $cl
     $cs = $a.cut_stats
-    $cutSummary = "컷 $($cs.count)개, 평균 $('{0:0.00}' -f [double]$cs.mean)초, 가운데 값 $('{0:0.00}' -f [double]$cs.median)초, 가장 짧은 컷 $('{0:0.00}' -f [double]$cs.min)초, 가장 긴 컷 $('{0:0.00}' -f [double]$cs.max)초"
+    $ctx.cut_summary = Esc ("컷 $($cs.count)개, 평균 $(N2 $cs.mean)초, 가운데 값 $(N2 $cs.median)초, 가장 짧은 컷 $(N2 $cs.min)초, 가장 긴 컷 $(N2 $cs.max)초")
 
     # 소리 측정: 말소리, 배경 음악, 효과음이 한데 섞인 값이다
-    $soundHtml = ""
     $lo = $a.loudness
+    $sm = New-List; $su = New-List
     if ($lo -and $lo.available) {
-        $silRows = ""
-        foreach ($sl in @(Get-Opt $lo "silences" @())) { $silRows += ("<li>{0:0.00}초 - {1:0.00}초 ({2:0.0}초 동안)</li>" -f [double]$sl.start, [double]$sl.end, [double]$sl.duration) }
-        if ($silRows) { $silHtml = "<p>소리가 거의 없는 구간(말소리, 배경 음악, 효과음이 모두 조용한 곳):</p><ul>$silRows</ul>" } else { $silHtml = "<p>0.5초 이상 소리가 거의 없는 구간은 없었습니다.</p>" }
-        $soundHtml = "<div class='hint'><b>소리 측정 (세 가지 소리가 섞인 전체 값)</b><br>분석 프로그램은 말소리, 배경 음악, 효과음을 따로 갈라서 잴 수 없습니다. 아래 값은 셋이 합쳐진 소리 전체의 값입니다. 각각 무엇이 들어 있는지는 12초 소리 조각을 직접 들어 보고 적습니다.</div><table><tbody><tr><th>통합 음량</th><td>$(Esc ([string]$lo.integrated_lufs)) LUFS</td></tr><tr><th>소리 폭(LRA)</th><td>$(Esc ([string]$lo.lra)) LU</td></tr><tr><th>가장 큰 소리(피크)</th><td>$(Esc ([string]$lo.peak_dbfs)) dBFS</td></tr></tbody></table><p class='muted'>참고: KAIST 공식 쇼츠 솔직후기는 약 -18.7 LUFS(2026-11-15 같은 방법으로 잼). 값이 클수록(0에 가까울수록) 큰 소리입니다.</p>$silHtml"
-    } else { $soundHtml = "<p class='muted'>이 영상에는 소리가 없거나 잴 수 없었습니다.</p>" }
+        $sil = New-List
+        foreach ($sl in @(Get-Opt $lo "silences" @())) { [void]$sil.Add(@{ start = (N2 $sl.start); end = (N2 $sl.end); duration = ([double]$sl.duration).ToString("0.0", $inv) }) }
+        $silHas = New-List; $silNone = New-List
+        if ($sil.Count -gt 0) { [void]$silHas.Add(@{}) } else { [void]$silNone.Add(@{}) }
+        [void]$sm.Add(@{ lufs = (Esc ([string]$lo.integrated_lufs)); lra = (Esc ([string]$lo.lra)); peak = (Esc ([string]$lo.peak_dbfs)); silence_has = $silHas; silence_rows = $sil; silence_none = $silNone })
+    } else { [void]$su.Add(@{}) }
+    $ctx.sound_measured = $sm
+    $ctx.sound_unavailable = $su
 
-    $clipHtml = ""
-    if (Get-Opt $a.files "audio_clip_mp3" $null) { $clipHtml = "<audio controls src='$(Esc $a.files.audio_clip_mp3)'></audio>" }
-    elseif (Get-Opt $a.files "audio_clip_wav" $null) { $clipHtml = "<audio controls src='$(Esc $a.files.audio_clip_wav)'></audio>" }
+    $clip = New-List
+    $clipSrc = ""
+    if (Get-Opt $a.files "audio_clip_mp3" $null) { $clipSrc = [string]$a.files.audio_clip_mp3 }
+    elseif (Get-Opt $a.files "audio_clip_wav" $null) { $clipSrc = [string]$a.files.audio_clip_wav }
+    if ($clipSrc) { [void]$clip.Add(@{ clip_src = (Esc $clipSrc) }) }
+    $ctx.clip_audio = $clip
 
     # 폰트 후보
-    $fontRows = ""
+    $fl = New-List
     foreach ($c in @(Get-Opt (Get-Opt $fd "font" $null) "candidates" @())) {
         $nm = [string](Get-Opt $c "name" "")
-        if ($nm) { $fontRows += "<tr><td>$(Esc $nm)</td><td>$(Esc ([string](Get-Opt $c 'confidence' '')))</td><td>$(Esc ([string](Get-Opt $c 'why' '')))</td></tr>" }
+        if ($nm) { [void]$fl.Add(@{ name = (Esc $nm); confidence = (Esc ([string](Get-Opt $c "confidence" ""))); why = (Esc ([string](Get-Opt $c "why" ""))) }) }
     }
-    if (-not $fontRows) { $fontRows = "<tr><td colspan='3' class='muted'>아직 후보를 적지 않았습니다.</td></tr>" }
+    $ctx.font_rows = $fl
+    $fe = New-List
+    if ($fl.Count -eq 0) { [void]$fe.Add(@{}) }
+    $ctx.font_empty = $fe
+
+    # 곡 찾기 메모, 라이선스 기록 표(빈 줄 3개)
     $musicNote = [string](Get-Opt (Get-Opt $fd "music_search" $null) "note" "")
     if (-not $musicNote) { $musicNote = [string](Get-Opt (Get-Opt $fd "music" $null) "note" "") }
+    $mn = New-List
+    if ($musicNote) { [void]$mn.Add(@{ music_note = (Esc $musicNote) }) }
+    $ctx.music_note_block = $mn
+    $lic = New-List
+    for ($li = 0; $li -lt 3; $li++) { [void]$lic.Add(@{}) }
+    $ctx.license_rows = $lic
 
-    $css = @"
-body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;margin:0;background:#f6f7f9;color:#1d2330;line-height:1.6}
-main{max-width:980px;margin:0 auto;padding:24px 20px 80px}
-h1{font-size:28px;margin:8px 0}h2{font-size:21px;margin:0 0 10px;padding-top:6px}
-section{background:#fff;border:1px solid #dfe3ea;border-radius:12px;padding:18px 22px;margin:18px 0}
-table{border-collapse:collapse;width:100%;font-size:15px}th,td{border-bottom:1px solid #e6e9ef;padding:7px 9px;text-align:left;vertical-align:top}
-thead th{background:#eef2f7}.muted{color:#667085;font-size:14px}.tag{background:#eef2f7;border-radius:6px;padding:2px 8px;font-size:13px}
-img.ev{height:96px;border-radius:6px;margin:2px 6px 2px 0;border:1px solid #d5dae3}img.thumb{height:84px;border-radius:4px}
-img.big{max-width:100%;max-height:520px;border-radius:8px;border:1px solid #d5dae3}
-.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}.row>div{flex:1;min-width:260px}
-.hint{background:#fff8e6;border:1px solid #f2dc9b;border-radius:8px;padding:10px 14px;font-size:14px}
-ol li,ul li{margin:4px 0}code{background:#eef2f7;padding:1px 6px;border-radius:4px}
-nav a{margin-right:12px;font-size:14px}
-"@
-    $parts = New-Object System.Collections.ArrayList
-    [void]$parts.Add("<!DOCTYPE html><html lang='ko'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>쇼츠 설계도: $(Esc $title)</title><style>$css</style></head><body><main>")
-    [void]$parts.Add("<h1>쇼츠 설계도</h1><p><b>$(Esc $title)</b></p>")
-    if ($summary) { [void]$parts.Add("<p>$(Esc $summary)</p>") }
-    [void]$parts.Add("<nav><a href='#frame'>1 화면 틀</a><a href='#visual'>2 시각 요소</a><a href='#text'>3 글자</a><a href='#speech'>4 말소리</a><a href='#bgm'>5 배경 음악</a><a href='#sfx'>6 효과음</a><a href='#cuts'>컷과 편집점</a><a href='#font'>폰트 찾기</a><a href='#music'>곡 찾기</a><a href='#ask'>볼 때 묻는 질문</a></nav>")
-    [void]$parts.Add("<section><h2>영상 정보</h2><table><tbody>$metaHtml</tbody></table></section>")
-
-    [void]$parts.Add("<section id='frame'><h2>1. 화면 틀</h2><p class='muted'>화면을 어떤 칸으로 나눴는지(로고, 제목, 영상 칸, 아래 안내)와 크기, 색, 위치입니다.</p><div class='row'><div><img class='big' src='$(Esc $a.files.first_frame)' alt='첫 화면'></div></div>$(Items-Html (Get-Opt $g 'frame' $null))</section>")
-    [void]$parts.Add("<section id='visual'><h2>2. 시각 요소</h2><p class='muted'>영상, 사진, 그림 같은 화면 속 그림이 어떤 것으로 어떻게 쓰였는지입니다. 아래는 컷마다 첫 화면을 모은 표입니다(왼쪽 위부터 번호 순서).</p><a href='$(Esc $a.files.contact_sheet)'><img class='big' src='$(Esc $a.files.contact_sheet)' alt='컷 모음표'></a>$(Items-Html (Get-Opt $g 'visual' $null))</section>")
-    [void]$parts.Add("<section id='text'><h2>3. 글자 (제목 글자, 자막)</h2><p class='muted'>화면에 얹힌 글자입니다. 제목 같은 글자와, 하는 말을 옮겨 적은 자막의 내용, 색, 크기, 위치, 나타나는 시간입니다.</p>$(Items-Html (Get-Opt $g 'text' $null))</section>")
-    [void]$parts.Add("<section id='speech'><h2>4. 말소리 (대사, 나레이션)</h2><p class='muted'>사람이 하는 말입니다. 누가, 어떤 말투와 빠르기로, 언제부터 언제까지 말하는지 적습니다.</p>$soundHtml$clipHtml$(Items-Html (Get-Opt $g 'speech' $null))<p class='muted'>말소리만 따로 잰 값은 없습니다. 위 측정은 전체 소리입니다.</p></section>")
-    [void]$parts.Add("<section id='bgm'><h2>5. 배경 음악</h2><p class='muted'>말 뒤에 깔리는 음악입니다. 있는지, 어떤 분위기인지, 말소리보다 작은지 적습니다. 음악이 있는지는 프로그램이 판단하지 못하니 소리 조각을 들어 보고 사람이 정합니다. 곡 이름 찾는 방법은 아래 &quot;곡 찾기&quot;에 있습니다.</p>$clipHtml$(Items-Html (Get-Opt $g 'music' $null))<p class='muted'>배경 음악만 따로 잰 값은 없습니다. 4번 말소리 칸의 전체 소리 측정을 참고하세요.</p></section>")
-    [void]$parts.Add("<section id='sfx'><h2>6. 효과음</h2><p class='muted'>짧게 들어가는 소리입니다(전환할 때의 휙 소리, 강조할 때의 띵 소리 등). 어느 시각에 어떤 소리가 들어가는지 적습니다. 효과음은 프로그램이 찾아내지 못하니 영상을 보고 들으며 사람이 적습니다.</p>$(Items-Html (Get-Opt $g 'sfx' $null))<p class='muted'>효과음만 따로 잰 값은 없습니다.</p></section>")
-    [void]$parts.Add("<section id='cuts'><h2>컷과 편집점 (분석에 쓰는 말)</h2><p><b>$(Esc $cutSummary)</b></p><p class='muted'>이 칸은 영상의 구성 요소가 아니라 영상을 분석할 때 쓰는 말입니다. 컷은 화면이 바뀌는 한 토막이고, 편집점은 컷과 컷 사이의 경계입니다. 장면은 뜻으로 묶은 컷 몇 개입니다. 컷의 길이와 순서가 도입, 전개, 강조, 마무리로 어떻게 이어지는지 봅니다. 컷은 화면이 확 바뀌는 곳을 프로그램이 찾은 것이라 서서히 바뀌는 전환은 놓칠 수 있습니다.</p>$(Items-Html (Get-Opt $g 'cuts' $null))<details open><summary>컷 목록</summary><table><thead><tr><th>번호</th><th>시작(초)</th><th>끝(초)</th><th>길이(초)</th><th>첫 화면</th></tr></thead><tbody>$cutRows</tbody></table></details></section>")
-
-    $fontSec = @"
-<section id='font'><h2>폰트 찾기</h2>
-<p class='muted'>제목 글자가 있는 부분을 잘라 둔 사진입니다. 글꼴 이름은 사진만으로 확정할 수 없고, 아래 순서로 후보를 좁힙니다.</p>
-<img class='big' src='$(Esc $a.files.title_crop)' alt='제목 부분'>
-<ol>
-<li>이 사진을 Codex 대화창에 붙여 넣고 <code>이 제목 글꼴과 닮은 무료 글꼴 후보 5개를 알려줘</code>라고 말합니다. 답은 후보일 뿐 정답이 아닙니다.</li>
-<li>후보 이름을 <b>눈누(noonnu.cc)</b>에서 검색해 모양을 눈으로 비교하고, 글꼴 상세 페이지의 <b>라이선스(상업 이용, 재배포)</b>를 읽습니다.</li>
-<li>글꼴 이미지 검색 서비스(예: 산돌구름 글꼴 찾기, WhatTheFont, WhatFontIs)에 이 사진을 올려 볼 수 있습니다. 영어 글꼴 위주인 서비스가 많고, 무료 범위와 로그인 여부는 직접 확인해야 합니다. 외부 사이트에 올리는 것이므로 공개된 영상의 화면만 올립니다.</li>
-<li>가장 확실한 방법: 후보 글꼴로 같은 문구를 써서 원본 사진 위에 겹쳐 봅니다. Codex에게 <code>후보 글꼴로 같은 문구를 그려서 원본과 비교해줘</code>라고 부탁하세요.</li>
-</ol>
-<p class='hint'>무료로 쓸 수 있는 글꼴 예: Gmarket Sans(SIL 오픈 폰트 라이선스, 이 프로젝트에 들어 있음), Pretendard. 어떤 글꼴이든 쓰기 전에 라이선스 문서를 직접 읽으세요.</p>
-<table><thead><tr><th>후보</th><th>확신</th><th>이유</th></tr></thead><tbody>$fontRows</tbody></table></section>
-"@
-    [void]$parts.Add($fontSec)
-
-    $musicSec = @"
-<section id='music'><h2>곡 찾기</h2>
-<p class='muted'>영상 속 12초를 잘라 둔 소리 조각입니다. 배경 음악만 들리는 구간이 좋습니다.</p>
-$clipHtml
-<p>$(Esc $musicNote)</p>
-<ol>
-<li>유튜브 쇼츠라면 먼저 화면 아래의 <b>소리 이름</b>을 눌러 봅니다. 음원이 표시되는 영상이면 가장 빠릅니다.</li>
-<li>곡 식별 서비스에 소리 조각을 올려 봅니다: <b>AudD</b>(audd.io), <b>ACRCloud</b>(acrcloud.com). 둘 다 계정이 필요하고 무료 범위가 정해져 있으며, 정책은 바뀔 수 있습니다. 외부에 올리는 것이므로 공개된 영상의 소리만 올립니다.</li>
-<li>결과가 없다고 해서 무료 음원이라는 뜻은 아닙니다. 데이터에 없는 곡일 뿐입니다.</li>
-<li>곡 이름을 알아내도 <b>써도 된다는 허락은 아닙니다</b>. 허락(라이선스)은 따로 확인합니다.</li>
-</ol>
-<h3>내 쇼츠에 쓸 음악, 효과음을 구하는 곳</h3>
-<ul>
-<li><b>공유마당</b>(gongu.copyright.or.kr): 곡마다 조건이 다릅니다. 공공누리 제1유형, CC BY처럼 상업 이용이 되는 것만 고르고, 출처 표시 조건을 지킵니다.</li>
-<li><b>YouTube 오디오 라이브러리</b>(YouTube Studio 안): 유튜브에 올릴 영상이면 저작권 클레임 위험이 낮은 편입니다. 다른 곳에 다시 쓸 때의 조건은 약관을 확인합니다.</li>
-<li><b>Freesound</b>(freesound.org): 효과음은 <b>CC0</b> 표시된 것만 씁니다.</li>
-<li>쓰지 않는 것: <b>CC BY-NC</b>(비영리 한정) 표시 음원. 게시하는 영상에는 쓰지 않습니다.</li>
-</ul>
-<p class='hint'>음악과 효과음 파일은 이 프로젝트 폴더나 저장소에 넣지 않고 <code>재료</code> 폴더에만 둡니다.</p>
-<h3>쓴 소리마다 남길 기록</h3>
-<table><thead><tr><th>곡/효과음 제목</th><th>만든 사람</th><th>받은 주소</th><th>라이선스 이름</th><th>상업 이용 가능 문구</th><th>출처 표시 문구</th><th>받은 날</th></tr></thead><tbody><tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody></table></section>
-"@
-    [void]$parts.Add($musicSec)
+    # 볼 때 묻는 질문 (여섯 가지 고정)
     $qs = @("첫 장면이 관심을 끄는가?", "가장 먼저 보이는 것은 무엇인가?", "컷이 바뀌는 속도가 내용과 맞는가?", "소리가 화면과 맞는가?", "자막이 핵심을 돕는가?", "끝나고 남는 메시지는 무엇인가?")
     $ans = @(Get-Opt $fd "questions" @())
-    $qHtml = ""
+    $ql = New-List
     for ($qi = 0; $qi -lt $qs.Count; $qi++) {
         $a1 = ""
         if ($qi -lt $ans.Count) { $a1 = [string](Get-Opt $ans[$qi] "answer" "") }
-        if ($a1) { $a1 = "<br><span class='tag'>답</span> " + (Esc $a1) } else { $a1 = "<br><span class='muted'>(답을 적지 않았습니다)</span>" }
-        $qHtml += "<li>$(Esc $qs[$qi])$a1</li>"
+        $given = New-List; $missing = New-List
+        if ($a1) { [void]$given.Add(@{ answer = (Esc $a1) }) } else { [void]$missing.Add(@{}) }
+        [void]$ql.Add(@{ question = (Esc $qs[$qi]); answer_given = $given; answer_missing = $missing })
     }
-    [void]$parts.Add("<section id='ask'><h2>볼 때 묻는 질문</h2><p class='muted'>쇼츠를 볼 때마다 이 여섯 가지를 스스로에게 물어보세요. 설계도를 읽는 방법이자, 내 쇼츠를 점검하는 방법입니다.</p><ol>$qHtml</ol></section>")
-    [void]$parts.Add("<p class='muted'>이 보고서는 분석 도구가 잰 값과 Codex가 사진을 보고 적은 내용으로 만들었습니다. 사진으로 읽은 내용은 틀릴 수 있으니 중요한 값은 직접 확인하세요.</p></main></body></html>")
+    $ctx.question_rows = $ql
+
+    # ---- 채우기 ----
+    $html = Expand-Tpl $tpl @($ctx)
+
+    # 남은 자리 점검: 채우지 못한 {{...}} 나 블록 표시가 있으면 어느 자리인지 알려 주고 멈춘다
+    $left = New-List
+    foreach ($m2 in [regex]::Matches($html, '\{\{[^}\r\n]*\}\}|<!-- (?:BEGIN|END):\w+ -->|\{\{')) {
+        $before = $html.Substring(0, $m2.Index)
+        $line = ($before.Split("`n")).Count
+        $sec = "머리말"
+        $sm2 = [regex]::Matches($before, 'id="(\w+)"')
+        if ($sm2.Count -gt 0) { $sec = $sm2[$sm2.Count - 1].Groups[1].Value }
+        [void]$left.Add("  $($m2.Value)  (구역 $sec, 완성본 $line 번째 줄 근처)")
+    }
+    if ($left.Count -gt 0) {
+        Fail ("보고서 틀(report-template.html)에 채우지 못한 자리가 있습니다. 자리 이름의 철자를 확인하거나 틀을 원래대로 되돌려 주세요.`n" + (($left.ToArray()) -join "`n") + "`n파일: $tplPath")
+    }
+
+    # 점검: 모든 섹션이 있는지 (id 와 h2 제목). 빠졌으면 report.html 을 만들지 않고 멈춘다.
     $out = Join-Path $dir "report.html"
-    Write-Utf8 $out (($parts.ToArray()) -join "`n")
+    $lack = New-List
+    foreach ($s in $script:REPORT_SECTIONS) {
+        $okId = $html.Contains("id=""$($s[0])""")
+        $okH2 = $html.Contains("<h2>$($s[1])</h2>")
+        if (-not ($okId -and $okH2)) { [void]$lack.Add("$($s[1]) (id=$($s[0]))") }
+    }
+    if ($lack.Count -gt 0) {
+        Fail ("보고서에 빠진 구역이 있습니다: " + (($lack.ToArray()) -join ", ") + "`n틀(report-template.html)에서 해당 구역이 지워졌는지 확인해 주세요. report.html 은 만들지 않았습니다.")
+    }
+    Write-Utf8 $out $html
     return $out
 }
 
