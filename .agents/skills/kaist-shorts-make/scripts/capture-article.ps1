@@ -192,7 +192,7 @@ try {
     $psi = New-Object Diagnostics.ProcessStartInfo
     $psi.FileName = $exe
     $argList = @("--headless=new", "--disable-gpu", "--hide-scrollbars", "--mute-audio", "--no-first-run", "--no-default-browser-check", "--disable-extensions", "--log-level=3", "--disable-logging",
-        "--remote-debugging-port=$port", "--remote-allow-origins=*", "--user-data-dir=$ud", "about:blank")
+        "--remote-debugging-port=$port", "--remote-allow-origins=http://127.0.0.1:$port", "--user-data-dir=$ud", "about:blank")
     $psi.Arguments = (($argList | ForEach-Object { Quote-Arg $_ }) -join " ")
     $psi.UseShellExecute = $false
     $psi.CreateNoWindow = $true
