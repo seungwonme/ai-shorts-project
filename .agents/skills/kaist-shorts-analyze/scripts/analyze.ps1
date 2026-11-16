@@ -206,7 +206,7 @@ function Item-Rows($group) {
             $e = [string]$e
             if (-not $e) { continue }
             # 바깥 주소(http:, javascript: 등)는 링크로 만들지 않고 글자로만 보여 준다. 근거는 결과 폴더 안의 상대 경로만 쓴다.
-            $isLocal = ($e -notmatch '^[A-Za-z][A-Za-z0-9+.\-]*:') -and ($e -notmatch '^[\\/]')
+            $isLocal = ($e -match '^[A-Za-z0-9_\-./\uAC00-\uD7A3]+\z') -and ($e -notmatch '\.\.') -and ($e -notmatch '^[\\/]')  # 허용 목록: 공백, 제어 문자, 쌍점(주소 형식)이 든 값은 링크로 만들지 않는다
             if ($isLocal -and $e -match '\.(jpg|jpeg|png|gif)$') { [void]$img.Add(@{ ev = (Esc $e) }) }
             elseif ($isLocal -and $e -match '\.(mp3|wav)$') { [void]$aud.Add(@{ ev = (Esc $e) }) }
             else { [void]$tag.Add(@{ ev = (Esc $e) }) }
