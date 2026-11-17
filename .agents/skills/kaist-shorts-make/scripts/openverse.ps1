@@ -2,7 +2,7 @@
 #
 #   사진 후보 찾기:   openverse.ps1 -Search "Daejeon; KAIST campus" -OutDir 재료\기사-<번호>
 #                     -> 검색어는 세미콜론(;)으로 나눠 최대 3개(영어 권장). 결과를 합쳐 OutDir\web-images.json 에 적고,
-#                        미리 보기 그림이 있는 후보 페이지(web-candidates.html)를 만들어 엽니다(-NoOpen 이면 열지 않음). 사진은 내려받지 않습니다.
+#                        미리 보기 그림이 있는 후보 페이지(web-candidates.html)를 만듭니다. 페이지는 열지 않고 경로만 알려 줍니다(사용자가 링크를 눌러 엽니다). 사진은 내려받지 않습니다.
 #                     -License cc0      (기본) CC0(조건 없음)만 찾습니다.
 #                     -License cc0,by   사용자가 요청할 때만. CC BY(만든 사람 표기 필요)도 찾습니다.
 #   고른 사진 받기:   openverse.ps1 -Download "1,3" -OutDir 재료\기사-<번호>
@@ -29,7 +29,6 @@
 # 이 파일은 UTF-8 (BOM 포함)으로 저장합니다.
 param(
     [string]$Search = "",
-    [switch]$NoOpen,
     [string]$Download = "",   # 받을 후보 번호. 예: "1,3" (쉼표나 공백으로 나눔)
     [string]$AddUrl = "",     # Wikimedia Commons 파일 페이지 주소로 직접 등록 (내장 웹 검색 등으로 찾은 사진용)
     [string]$OutDir = "",
@@ -208,7 +207,7 @@ function Get-WebImage([string]$url, [string]$dest, [string[]]$onlyHosts = $null,
                 # 30초를 넘게 기다리라고 하면(Wikimedia는 큰 원본에 600초를 준다) 기다리지 않고 멈춘다.
                 $ra = 0
                 try { [void][int]::TryParse([string]$resp.Headers["Retry-After"], [ref]$ra) } catch { }
-                if ($ra -gt 30) { return "서버가 요청을 제한했습니다 (코드 $code). 약 $ra 초 뒤에 다시 시도해 주세요." }
+                if ($ra -gt 30) { return "서버가 요청을 제한했습니다 (코드 $code). 약 $ra 초 동안은 이 서버의 사진을 다시 요청하지 말고, 다른 서버(Flickr) 후보를 고르거나 그 뒤에 한 번만 다시 시도해 주세요." }
                 if ($retry429 -ge 2) { return "서버가 요청을 제한했습니다 (코드 $code). 잠시 뒤에 다시 시도해 주세요." }
                 $wait = [Math]::Min(15, [Math]::Max(5, $ra + 4))
                 $retry429++
@@ -627,13 +626,8 @@ if ($Search) {
     if ($rateInfo) { Say $rateInfo }
     if ($cands.Count -eq 0) { Say "후보가 없습니다. 검색어를 바꿔 다시 찾을 수 있습니다." }
     else {
-        Say "후보 페이지(그림으로 보기): $outHtml"
-        if (-not $NoOpen) {
-            try {
-                if ($env:OS -eq "Windows_NT") { Start-Process -FilePath $outHtml }
-                elseif (Get-Command open -ErrorAction SilentlyContinue) { & open $outHtml }
-            } catch { Say "후보 페이지를 자동으로 열지 못했습니다. 위 파일을 직접 열어 주세요." }
-        }
+        Say "후보 페이지(그림으로 보기, 열지 않았음): $outHtml"
+        Say "이 경로를 사용자가 눌러서 열 수 있는 링크로 대화에 주세요."
         Say "아직 내려받지 않았습니다. 쓸 사진 번호를 정하면 -Download 로 받습니다."
     }
     Say "쓸 수 있는 것은 CC0와 CC BY뿐입니다. 그 밖의 라이선스, 로고나 캐릭터가 든 사진은 게시하는 영상에는 쓰지 않습니다."
