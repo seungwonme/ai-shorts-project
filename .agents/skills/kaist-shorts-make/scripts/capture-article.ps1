@@ -200,7 +200,7 @@ try {
 
     # 디버그 포트가 열릴 때까지 기다린다 (127.0.0.1 로컬만)
     $wsUrl = $null
-    for ($k = 0; $k -lt 80 -and -not $wsUrl; $k++) {
+    for ($k = 0; $k -lt 240 -and -not $wsUrl; $k++) {
         Start-Sleep -Milliseconds 250
         try {
             $lst = (Invoke-WebRequest -Uri "http://127.0.0.1:$port/json/list" -UseBasicParsing -TimeoutSec 3).Content | ConvertFrom-Json
@@ -208,7 +208,7 @@ try {
             if ($pg.Count -gt 0) { $wsUrl = [string]$pg[0].webSocketDebuggerUrl }
         } catch { }
     }
-    if (-not $wsUrl) { Fail "브라우저를 띄우지 못했습니다(20초 안에 응답 없음). 브라우저가 이미 열려 있어도 이 방식은 따로 새 창을 씁니다. 다시 한 번 실행해 보고, 계속 안 되면 알려 주세요." }
+    if (-not $wsUrl) { Fail "브라우저를 띄우지 못했습니다(60초 안에 응답 없음). 브라우저가 이미 열려 있어도 이 방식은 따로 새 창을 씁니다. 다시 한 번 실행해 보고, 계속 안 되면 알려 주세요." }
     $script:ws = New-Object Net.WebSockets.ClientWebSocket
     [void]$script:ws.ConnectAsync([Uri]$wsUrl, $script:ct).GetAwaiter().GetResult()
 
