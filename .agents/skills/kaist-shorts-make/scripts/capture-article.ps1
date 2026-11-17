@@ -1,7 +1,7 @@
 ﻿# 기사 웹페이지를 실제로 캡처해 page.png 와, 본문 문장마다 화면 좌표를 적은 page-boxes.json 을 만듭니다 (PowerShell 5.1 / 7 겸용)
 #
-#   powershell -NoProfile -ExecutionPolicy Bypass -File capture-article.ps1 -Url "https://news.kaist.ac.kr/news/html/news/?mode=V&mng_no=69410"
-#   powershell -NoProfile -ExecutionPolicy Bypass -File capture-article.ps1 -Dir "재료\기사-69410"      (sources.json 의 주소를 씁니다)
+#   powershell -NoProfile -ExecutionPolicy Bypass -File capture-article.ps1 -Url "https://news.kaist.ac.kr/news/html/news/?mode=V&mng_no=<번호>"
+#   powershell -NoProfile -ExecutionPolicy Bypass -File capture-article.ps1 -Dir "재료\기사-<번호>"      (sources.json 의 주소를 씁니다)
 #
 # collect-article.ps1 다음 단계입니다. 결과: 재료\기사-<번호>\page.png, page-boxes.json (그리고 sources.json 에 page_capture 기록).
 # 브라우저는 PC에 이미 있는 Microsoft Edge(없으면 Chrome)를 씁니다. 새 프로그램을 설치하지 않고, 파이썬과 npm 패키지도 쓰지 않습니다.

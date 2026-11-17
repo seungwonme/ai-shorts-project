@@ -1,6 +1,6 @@
 ﻿# 뉴스 기사 주소에서 제목, 날짜, 본문, 사진을 모읍니다 (PowerShell 5.1 / 7 겸용)
 #
-#   powershell -NoProfile -ExecutionPolicy Bypass -File collect-article.ps1 -Url "https://news.kaist.ac.kr/news/html/news/?mode=V&mng_no=69110"
+#   powershell -NoProfile -ExecutionPolicy Bypass -File collect-article.ps1 -Url "https://news.kaist.ac.kr/news/html/news/?mode=V&mng_no=<번호>"
 #
 # 결과: 재료\기사-<번호>\article.md (본문), img-01.jpg ... (본문 사진), sources.json (출처 기록)
 # news.kaist.ac.kr 기사에 맞춰져 있고, 다른 사이트는 "본문을 못 찾았을 수 있음" 경고와 함께 최대한 읽습니다.

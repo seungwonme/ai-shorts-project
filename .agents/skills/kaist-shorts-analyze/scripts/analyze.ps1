@@ -470,13 +470,116 @@ $meta = [ordered]@{
 }
 if ($info) { Write-Utf8 (Join-Path $outDir "source-info.json") ($ir.Out) }
 
+# ---- 화면 틀(고정된 로고, 제목 띠) 재기 ----------------------------------------------------------------
+# 화면 틀이 고정이면 영상 칸만 잘라 비교해야 컷이 잡힙니다. -VideoBox 가 없거나 auto 이면 영상마다 잽니다:
+# 영상 전체에서 16장을 골라 같은 자리의 밝기가 한 번도 안 바뀐 줄(고정 띠)과 바뀌는 줄(영상 칸)을 나눕니다.
+# -VideoBox none = 틀 없음(화면 전체), -VideoBox kaist-template = KAIST 행사 쇼츠 틀 값, -VideoBox "왼쪽,위,너비,높이" = 직접 지정(0~1 비율).
+# 이 값들은 어림 측정(휴리스틱)입니다. 측정이 확실하지 않으면 세로 영상은 KAIST 행사 쇼츠 틀(아래 상수, 출처 references/TEMPLATE.md)로 대신하고, 그렇게 했다고 알립니다.
+# KAIST 행사 쇼츠 틀: 1080x1920 캔버스에서 영상 칸은 y582부터 높이 756 (kaist-shorts-make/references/TEMPLATE.md 의 측정값). 이 분석 도구에서 틀 숫자가 적힌 유일한 곳입니다.
+$KAIST_TEMPLATE_CANVAS_H = 1920.0; $KAIST_TEMPLATE_VIDEO_Y = 582.0; $KAIST_TEMPLATE_VIDEO_H = 756.0
+$FRAME_SAMPLES = 16        # 고르는 장 수
+$FRAME_STATIC_DIFF = 10    # 16장에서 밝기 차이가 이 이하이면 "안 바뀐 칸"
+$FRAME_STATIC_ROW = 0.97   # 한 줄의 97% 이상이 안 바뀌었으면 "고정 줄"
+$FRAME_DYNAMIC_ROW = 0.85  # 한 줄의 15% 이상이 바뀌면 "움직이는 줄"
+
+function Measure-VideoBox([string]$path, [double]$vw, [double]$vh, [double]$seconds) {
+    $res = [ordered]@{ source = "unsure"; box = $null; note = ""; static_top = 0; static_bottom = 0; dynamic_height = 0 }
+    $sw = 90; $sh = [int][Math]::Max(40, [Math]::Min(200, [Math]::Round($sw * $vh / $vw)))
+    $tmp = Join-Path ([IO.Path]::GetTempPath()) ("kaist-frame-" + [Guid]::NewGuid().ToString("N").Substring(0, 8) + ".raw")
+    try {
+        $t0 = $seconds * 0.04; $span = $seconds * 0.92
+        $r = Invoke-Tool $script:FFMPEG_EXE @("-hide_banner", "-v", "error", "-y", "-ss", (F $t0), "-t", (F $span), "-i", $path, "-an", "-vf", ("fps=" + (F ($FRAME_SAMPLES / $span)) + ",scale=${sw}:${sh}:flags=area,format=gray"), "-frames:v", "$FRAME_SAMPLES", "-f", "rawvideo", $tmp) $null
+        if ($r.Code -ne 0 -or -not (Test-Path -LiteralPath $tmp)) { $res.note = "화면 틀을 재지 못했습니다(프레임을 읽지 못함)"; return $res }
+        $b = [IO.File]::ReadAllBytes($tmp)
+    } finally { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }
+    $fs = $sw * $sh
+    $n = [int][Math]::Floor($b.Length / $fs)
+    if ($n -lt 6) { $res.note = "고른 화면이 너무 적어 화면 틀을 재지 못했습니다($n 장)"; return $res }
+    $mn = New-Object 'int[]' $fs; $mx = New-Object 'int[]' $fs
+    for ($i = 0; $i -lt $fs; $i++) { $mn[$i] = 255; $mx[$i] = 0 }
+    for ($f = 0; $f -lt $n; $f++) {
+        $o = $f * $fs
+        for ($i = 0; $i -lt $fs; $i++) { $v = [int]$b[$o + $i]; if ($v -lt $mn[$i]) { $mn[$i] = $v }; if ($v -gt $mx[$i]) { $mx[$i] = $v } }
+    }
+    $rowStatic = New-Object 'double[]' $sh
+    $colDyn = New-Object 'double[]' $sw
+    for ($y = 0; $y -lt $sh; $y++) {
+        $c = 0
+        for ($x = 0; $x -lt $sw; $x++) { if (($mx[$y * $sw + $x] - $mn[$y * $sw + $x]) -le $FRAME_STATIC_DIFF) { $c++ } }
+        $rowStatic[$y] = $c / [double]$sw
+    }
+    # 움직이는 줄을 이어 붙여(빈 틈 6% 이하) 가장 긴 덩어리를 영상 칸으로 본다
+    $gap = [Math]::Max(1, [int][Math]::Round($sh * 0.06))
+    $runs = @(); $st = -1; $last = -1
+    for ($y = 0; $y -le $sh; $y++) {
+        $dyn = $false; if ($y -lt $sh) { $dyn = ($rowStatic[$y] -lt $FRAME_DYNAMIC_ROW) }
+        if ($dyn) { if ($st -lt 0) { $st = $y }; $last = $y }
+        elseif ($st -ge 0 -and (($y - $last) -gt $gap -or $y -eq $sh)) { $runs += @{ a = $st; b = $last }; $st = -1 }
+    }
+    if ($runs.Count -eq 0) { $res.note = "16장이 거의 같아 움직이는 칸을 찾지 못했습니다"; return $res }
+    $best = $runs | Sort-Object { $_.b - $_.a } -Descending | Select-Object -First 1
+    $hd = ($best.b - $best.a + 1) / [double]$sh
+    $stTop = 0; for ($y = 0; $y -lt $best.a; $y++) { if ($rowStatic[$y] -ge $FRAME_STATIC_ROW) { $stTop++ } }
+    $stBot = 0; for ($y = $best.b + 1; $y -lt $sh; $y++) { if ($rowStatic[$y] -ge $FRAME_STATIC_ROW) { $stBot++ } }
+    $res.static_top = [Math]::Round($stTop / [double]$sh, 3); $res.static_bottom = [Math]::Round($stBot / [double]$sh, 3); $res.dynamic_height = [Math]::Round($hd, 3)
+    $staticOut = ($stTop + $stBot) / [double]$sh
+    # 가로 범위: 영상 칸 줄에서 바뀌는 칸이 30% 이상인 열
+    $c0 = -1; $c1 = -1
+    for ($x = 0; $x -lt $sw; $x++) {
+        $c = 0; for ($y = $best.a; $y -le $best.b; $y++) { if (($mx[$y * $sw + $x] - $mn[$y * $sw + $x]) -gt $FRAME_STATIC_DIFF) { $c++ } }
+        if (($c / [double]($best.b - $best.a + 1)) -ge 0.30) { if ($c0 -lt 0) { $c0 = $x }; $c1 = $x }
+    }
+    if ($c0 -lt 0) { $res.note = "움직이는 열을 찾지 못했습니다"; return $res }
+    $left = $c0 / [double]$sw; $width = ($c1 + 1 - $c0) / [double]$sw
+    if ($hd -ge 0.80 -and $staticOut -lt 0.10 -and $width -ge 0.85) {
+        $res.source = "full-frame"; $res.box = @(0.0, 0.0, 1.0, 1.0); $res.note = "고정된 띠가 없습니다(화면 전체가 움직임)"; return $res
+    }
+    if ($staticOut -ge 0.15 -and $hd -ge 0.15 -and $hd -le 0.85 -and $width -ge 0.40) {
+        # 고정 띠와 맞닿는 줄이 흔들리지 않게 안쪽으로 한 칸씩 줄인다
+        $a = [Math]::Min($best.b, $best.a + 1); $e = [Math]::Max($a, $best.b - 1)
+        $top = $a / [double]$sh; $hh = ($e + 1 - $a) / [double]$sh
+        $res.source = "measured"
+        $res.box = @([Math]::Round($left, 3), [Math]::Round($top, 3), [Math]::Round($width, 3), [Math]::Round($hh, 3))
+        $res.note = ("고정 띠 위 {0}%, 아래 {1}%, 움직이는 칸 {2}%" -f [Math]::Round($stTop * 100.0 / $sh), [Math]::Round($stBot * 100.0 / $sh), [Math]::Round($hd * 100))
+        return $res
+    }
+    $res.note = ("측정이 애매합니다(움직이는 칸 {0}%, 고정 띠 {1}%)" -f [Math]::Round($hd * 100), [Math]::Round($staticOut * 100))
+    return $res
+}
+
+$vbDetail = [ordered]@{ mode = ""; source = ""; value = ""; note = "" }
+$vbArr = $null
+$vbMode = $VideoBox.Trim().ToLower()
+if ($vbMode -eq "" -or $vbMode -eq "auto") {
+    $vbDetail.mode = "auto"
+    $m = Measure-VideoBox $src ([double]$meta.width) ([double]$meta.height) $dur
+    if ($m.source -eq "measured") { $vbArr = $m.box; $vbDetail.source = "measured"; $vbDetail.note = $m.note }
+    elseif ($m.source -eq "full-frame") { $vbArr = $null; $vbDetail.source = "full-frame"; $vbDetail.note = $m.note }
+    elseif ([double]$meta.height / [double]$meta.width -ge 1.7) {
+        $vbArr = @(0.0, ([Math]::Round($KAIST_TEMPLATE_VIDEO_Y / $KAIST_TEMPLATE_CANVAS_H, 3)), 1.0, ([Math]::Round($KAIST_TEMPLATE_VIDEO_H / $KAIST_TEMPLATE_CANVAS_H, 3)))
+        $vbDetail.source = "fallback-kaist-template"; $vbDetail.note = ($m.note + ". 측정이 확실하지 않아 세로 영상에는 KAIST 행사 쇼츠 틀 값(TEMPLATE.md)으로 대신했습니다. 틀이 다르면 -VideoBox none 이나 숫자로 지정하세요.")
+    } else { $vbArr = $null; $vbDetail.source = "full-frame"; $vbDetail.note = ($m.note + ". 가로 영상이라 화면 전체로 컷을 찾습니다.") }
+}
+elseif ($vbMode -eq "none") { $vbDetail.mode = "none"; $vbDetail.source = "full-frame"; $vbDetail.note = "-VideoBox none: 화면 전체로 컷을 찾습니다." }
+elseif ($vbMode -eq "kaist-template") {
+    $vbDetail.mode = "kaist-template"; $vbDetail.source = "kaist-template"
+    $vbArr = @(0.0, ([Math]::Round($KAIST_TEMPLATE_VIDEO_Y / $KAIST_TEMPLATE_CANVAS_H, 3)), 1.0, ([Math]::Round($KAIST_TEMPLATE_VIDEO_H / $KAIST_TEMPLATE_CANVAS_H, 3)))
+    $vbDetail.note = "-VideoBox kaist-template: KAIST 행사 쇼츠 틀 값(TEMPLATE.md)"
+}
+else {
+    $vbDetail.mode = "given"; $vbDetail.source = "given"
+    $vbArr = @($VideoBox.Split(",") | ForEach-Object { [double]::Parse($_.Trim(), $inv) })
+    if ($vbArr.Count -ne 4) { Fail "-VideoBox 는 auto, none, kaist-template 또는 '왼쪽,위,너비,높이'를 0~1 사이 비율로 적습니다. 예: 0,0.2,1,0.5" }
+    $vbDetail.note = "-VideoBox 로 직접 지정"
+}
+if ($vbArr) { $vbDetail.value = (($vbArr | ForEach-Object { F $_ }) -join ",") }
+if ($vbArr) { Say ("화면 틀: 영상 칸 {0} ({1}: {2})" -f $vbDetail.value, $vbDetail.source, $vbDetail.note) } else { Say ("화면 틀: 없음, 화면 전체 ({0})" -f $vbDetail.note) }
+
 # ---- 컷 찾기 (화면 변화 점수) --------------------------------------------------------------------
 Say "컷을 찾는 중..."
-# 화면 틀(로고, 제목)이 고정이면 영상 칸만 잘라 비교해야 컷이 잡힙니다 (-VideoBox "왼쪽,위,너비,높이" 비율)
 $sceneVf = "select='gt(scene,$(F $SceneThreshold))',showinfo"
-if ($VideoBox) {
-    $vb = @($VideoBox.Split(",") | ForEach-Object { [double]::Parse($_.Trim(), $inv) })
-    if ($vb.Count -ne 4) { Fail "-VideoBox 는 '왼쪽,위,너비,높이'를 0~1 사이 비율로 적습니다. 예: 0,0.303,1,0.394" }
+if ($vbArr) {
+    $vb = $vbArr
     $sceneVf = "crop=w=iw*$(F $vb[2]):h=ih*$(F $vb[3]):x=iw*$(F $vb[0]):y=ih*$(F $vb[1])," + $sceneVf
 }
 $sc = Run-FFmpeg @("-i", $src, "-vf", $sceneVf, "-an", "-f", "null", "-") "컷 찾기"
@@ -568,7 +671,7 @@ if ($lens.Count % 2 -eq 0 -and $lens.Count -gt 1) { $median = ($lens[$lens.Count
 $stats = [ordered]@{ count = $cuts.Count; mean = [Math]::Round(($lens | Measure-Object -Average).Average, 3); median = [Math]::Round($median, 3); min = $lens[0]; max = $lens[$lens.Count - 1] }
 $sourceUrl = $null; if ($isUrl) { $sourceUrl = $Source }
 $analysis = [ordered]@{
-    name = $slug; source_url = $sourceUrl; source_file = $src; scene_threshold = $SceneThreshold; video_box = $VideoBox
+    name = $slug; source_url = $sourceUrl; source_file = $src; scene_threshold = $SceneThreshold; video_box = $vbDetail.value; video_box_detail = $vbDetail
     meta = $meta; cuts = $cuts; cut_stats = $stats; loudness = $loud; files = $files
     title_crop_box = $box
 }

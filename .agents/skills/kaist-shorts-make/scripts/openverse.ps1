@@ -1,17 +1,17 @@
 ﻿# Openverse 사진 검색으로 쓸 수 있는 사진 후보 찾기 (PowerShell 5.1 / 7 겸용)
 #
-#   사진 후보 찾기:   openverse.ps1 -Search "Daejeon" -OutDir 재료\기사-69110
+#   사진 후보 찾기:   openverse.ps1 -Search "Daejeon" -OutDir 재료\기사-<번호>
 #                     -> OutDir\web-images.json 에 후보 목록만 적고, 사진은 내려받지 않습니다.
 #                     -License cc0      (기본) CC0(조건 없음)만 찾습니다.
 #                     -License cc0,by   사용자가 요청할 때만. CC BY(만든 사람 표기 필요)도 찾습니다.
-#   고른 사진 받기:   openverse.ps1 -Download "1,3" -OutDir 재료\기사-69110
+#   고른 사진 받기:   openverse.ps1 -Download "1,3" -OutDir 재료\기사-<번호>
 #                     -> web-01.jpg 처럼 받고, 같은 폴더의 sources.json 의 web_images 에 제목, 만든 사람, 라이선스,
 #                        원본 페이지를 적습니다. 사람이 승인하기 전(human_approved "no")에는 render.ps1이 쓰지 않습니다.
-#   Commons 직접 등록: openverse.ps1 -AddUrl "https://commons.wikimedia.org/wiki/File:..." -OutDir 재료\기사-69110
+#   Commons 직접 등록: openverse.ps1 -AddUrl "https://commons.wikimedia.org/wiki/File:..." -OutDir 재료\기사-<번호>
 #                     -> Commons API로 라이선스, 작성자를 읽어 같은 규칙(기본 CC0만, -License cc0,by 이면 CC BY도)으로 판정하고, 통과하면 받아서 등록합니다.
-#   확인 기록:        openverse.ps1 -ConfirmRights "1" -UserSaid "사용자가 한 말" -OutDir 재료\기사-69110
+#   확인 기록:        openverse.ps1 -ConfirmRights "1" -UserSaid "사용자가 한 말" -OutDir 재료\기사-<번호>
 #                     -> 사용자가 원본 페이지를 열어 확인했다고 말한 뒤에만 human_approved "yes"로 바꿉니다.
-#   쓰지 않기로 기록: openverse.ps1 -Reject "2" -OutDir 재료\기사-69110
+#   쓰지 않기로 기록: openverse.ps1 -Reject "2" -OutDir 재료\기사-<번호>
 #
 # 효과음(짧은 소리)은 이 스크립트의 오디오 경로로만 찾고 받습니다 (웹 검색이나 주소 직접 받기는 하지 않습니다):
 #   효과음 후보 찾기: openverse.ps1 -SearchSfx "whoosh" -OutDir 재료\sfx          (CC0 만. 사용자가 요청할 때만 -License cc0,by)
@@ -60,7 +60,7 @@ function Api-Error([object]$err, [string]$what) {
 }
 
 function Resolve-OutDir([string]$d) {
-    if (-not $d) { Fail "-OutDir 에 기사 재료 폴더를 적어 주세요. 예: 재료\기사-69110" }
+    if (-not $d) { Fail "-OutDir 에 기사 재료 폴더를 적어 주세요. 예: 재료\기사-<번호>" }
     if ([IO.Path]::IsPathRooted($d)) { return $d }
     return (Join-Path (Find-ProjectRoot) $d)
 }

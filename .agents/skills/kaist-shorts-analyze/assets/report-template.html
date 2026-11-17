@@ -148,7 +148,7 @@ footer.note{border-top:1px solid var(--line);padding-top:16px;margin-top:8px}
 <h2>4. 말소리 (대사, 나레이션)</h2>
 <p class="lead">사람이 하는 말입니다. 누가, 어떤 말투와 빠르기로, 언제부터 언제까지 말하는지 적습니다.</p>
 <!-- BEGIN:sound_measured -->
-<div class="hint"><b>소리 측정 (세 가지 소리가 섞인 전체 값)</b><br>분석 프로그램은 말소리, 배경 음악, 효과음을 따로 갈라서 잴 수 없습니다. 아래 값은 셋이 합쳐진 소리 전체의 값입니다. 각각 무엇이 들어 있는지는 12초 소리 조각을 직접 들어 보고 적습니다.</div>
+<div class="hint"><b>소리 측정 (세 가지 소리가 섞인 전체 값)</b><br>분석 프로그램은 말소리, 배경 음악, 효과음을 따로 갈라서 잴 수 없습니다. 아래 값은 셋이 합쳐진 소리 전체의 값입니다. 각각 무엇이 들어 있는지는 원본 영상을 소리와 함께 처음부터 끝까지 들어 보고 적습니다. 아래 12초 소리 조각은 곡 찾기용으로 잘라 둔 일부입니다.</div>
 <table class="info"><tbody>
 <tr><th>통합 음량</th><td>{{lufs}} LUFS</td></tr>
 <tr><th>소리 폭(LRA)</th><td>{{lra}} LU</td></tr>
@@ -169,7 +169,7 @@ footer.note{border-top:1px solid var(--line);padding-top:16px;margin-top:8px}
 
 <section id="bgm">
 <h2>5. 배경 음악</h2>
-<p class="lead">말 뒤에 깔리는 음악입니다. 있는지, 어떤 분위기인지, 말소리보다 작은지 적습니다. 음악이 있는지는 프로그램이 판단하지 못하니 소리 조각을 들어 보고 사람이 정합니다. 곡 이름 찾는 방법은 아래 &quot;곡 찾기&quot;에 있습니다.</p>
+<p class="lead">말 뒤에 깔리는 음악입니다. 있는지, 어떤 분위기인지, 말소리보다 작은지 적습니다. 음악이 있는지는 프로그램이 판단하지 못하니 원본 영상을 들어 보고 사람이 정합니다. 곡 이름 찾는 방법은 아래 &quot;곡 찾기&quot;에 있습니다.</p>
 <!-- BEGIN:clip_audio --><audio controls src="{{clip_src}}"></audio><!-- END:clip_audio -->
 <table><thead><tr><th>무엇이 보이나</th><th>잰 값 / 확인한 내용</th><th>근거</th></tr></thead><tbody>
 <!-- BEGIN:items_music --><tr><td>{{what}}</td><td>{{value}}</td><td><!-- BEGIN:ev_image --><a href="{{ev}}"><img class="ev" src="{{ev}}" alt="근거 사진"></a><!-- END:ev_image --><!-- BEGIN:ev_audio --><audio controls src="{{ev}}"></audio><!-- END:ev_audio --><!-- BEGIN:ev_tag --><span class="tag">{{ev}}</span><!-- END:ev_tag --></td></tr><!-- END:items_music -->
@@ -205,12 +205,11 @@ footer.note{border-top:1px solid var(--line);padding-top:16px;margin-top:8px}
 
 <section id="font">
 <h2>폰트 찾기</h2>
-<p class="lead">제목 글자가 있는 부분을 잘라 둔 사진입니다. 글꼴 이름은 사진만으로 확정할 수 없고, 아래 순서로 후보를 좁힙니다.</p>
+<p class="lead">제목 글자가 있는 부분을 잘라 둔 사진과, 분석할 때 이 사진을 보고 고른 닮은 글꼴 후보입니다. 후보는 정답이 아니므로 아래 순서로 확인합니다.</p>
 <p><img class="big" src="{{title_crop}}" alt="제목 부분"></p>
 <ol>
-<li>이 사진을 Codex 대화창에 붙여 넣고 <code>이 제목 글꼴과 닮은 무료 글꼴 후보 5개를 알려줘</code>라고 말합니다. 답은 후보일 뿐 정답이 아닙니다.</li>
-<li>후보 이름을 <b>눈누(noonnu.cc)</b>에서 검색해 모양을 눈으로 비교하고, 글꼴 상세 페이지의 <b>라이선스(상업 이용, 재배포)</b>를 읽습니다.</li>
-<li>글꼴 이미지 검색 서비스(예: 산돌구름 글꼴 찾기, WhatTheFont, WhatFontIs)에 이 사진을 올려 볼 수 있습니다. 영어 글꼴 위주인 서비스가 많고, 무료 범위와 로그인 여부는 직접 확인해야 합니다. 외부 사이트에 올리는 것이므로 공개된 영상의 화면만 올립니다.</li>
+<li>아래 표의 후보 이름을 <b>눈누(noonnu.cc)</b>에서 검색해 모양을 눈으로 비교하고, 글꼴 상세 페이지의 <b>라이선스(상업 이용, 재배포)</b>를 읽습니다.</li>
+<li>후보가 모두 다르게 보이면 글꼴 이미지 검색 서비스(예: 산돌구름 글꼴 찾기, WhatTheFont, WhatFontIs)에 이 사진을 올려 볼 수 있습니다. 영어 글꼴 위주인 서비스가 많고, 무료 범위와 로그인 여부는 직접 확인해야 합니다. 외부 사이트에 올리는 것이므로 공개된 영상의 화면만 올립니다.</li>
 <li>가장 확실한 방법: 후보 글꼴로 같은 문구를 써서 원본 사진 위에 겹쳐 봅니다. Codex에게 <code>후보 글꼴로 같은 문구를 그려서 원본과 비교해줘</code>라고 부탁하세요.</li>
 </ol>
 <p class="hint">무료로 쓸 수 있는 글꼴 예: Gmarket Sans(SIL 오픈 폰트 라이선스, 이 프로젝트에 들어 있음), Pretendard. 어떤 글꼴이든 쓰기 전에 라이선스 문서를 직접 읽으세요.</p>
@@ -222,12 +221,12 @@ footer.note{border-top:1px solid var(--line);padding-top:16px;margin-top:8px}
 
 <section id="music">
 <h2>곡 찾기</h2>
-<p class="lead">영상 속 12초를 잘라 둔 소리 조각입니다. 배경 음악만 들리는 구간이 좋습니다.</p>
+<p class="lead">영상 속 12초를 잘라 둔 소리 조각입니다. 곡 찾기 서비스는 10초 남짓이면 곡을 찾기 때문에(ACRCloud는 한 번에 10초, AudD 기본 방식은 12초까지) 영상 전체 대신 이 길이만 올립니다. 배경 음악만 들리는 구간이 좋습니다.</p>
 <!-- BEGIN:clip_audio --><audio controls src="{{clip_src}}"></audio><!-- END:clip_audio -->
 <!-- BEGIN:music_note_block --><p>{{music_note}}</p><!-- END:music_note_block -->
 <ol>
 <li>유튜브 쇼츠라면 먼저 화면 아래의 <b>소리 이름</b>을 눌러 봅니다. 음원이 표시되는 영상이면 가장 빠릅니다.</li>
-<li>곡 식별 서비스에 소리 조각을 올려 봅니다: <b>AudD</b>(audd.io), <b>ACRCloud</b>(acrcloud.com). 둘 다 계정이 필요하고 무료 범위가 정해져 있으며, 정책은 바뀔 수 있습니다. 외부에 올리는 것이므로 공개된 영상의 소리만 올립니다.</li>
+<li>곡 식별 웹페이지에 소리 조각을 올려 봅니다: <b>AHA Music</b>(aha-music.com, ACRCloud 기술). Upload a file에 이 소리 조각을 올리면 되고, 코드와 로그인이 필요 없습니다. 무료이며 횟수 제한이 있습니다(파일 대신 유튜브 주소를 넣는 Video link도 됩니다. 25초 안팎의 광고를 본 뒤 결과가 나오고, 광고 차단이 켜져 있으면 막힙니다). AudD(audd.io)와 ACRCloud(acrcloud.com)는 개발자용 서비스라 코드로 부릅니다. 외부에 올리는 것이므로 공개된 영상의 소리만 올립니다.</li>
 <li>결과가 없다고 해서 무료 음원이라는 뜻은 아닙니다. 데이터에 없는 곡일 뿐입니다.</li>
 <li>곡 이름을 알아내도 <b>써도 된다는 허락은 아닙니다</b>. 허락(라이선스)은 따로 확인합니다.</li>
 </ol>

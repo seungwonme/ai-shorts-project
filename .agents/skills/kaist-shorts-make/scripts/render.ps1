@@ -37,15 +37,17 @@ $CAPTION_BELOW_BASELINE = 1540; $CAPTION_BELOW_SIZE = 44
 $CAPTION_BAR_H = 92; $CAPTION_BAR_ALPHA = 0.72
 # 자막 영역: 영상 영역(1080x756) 아래쪽 25%. 안쪽 자막은 글자 높이 40px 한 줄이 맨 아래에서 36px 위(영역의 89-95%)에 놓인다. 여유를 두어 아래 25%를 비워 두고, 강조 박스는 그 위에 둔다.
 $CAPTION_ZONE_FRAC = 0.25
-# 이 기사(69410) 포스터 img-01.jpg(800x1000)에서 글자가 잘리지 않고 중요한 글자가 위쪽 75%에 오도록 검증한 크롭. crop 에 "poster:title" 처럼 이름으로 쓴다.
-$POSTER_CROPS = [ordered]@{
-    title    = @{ x = 0.07; y = 0.02;  w = 0.86; h = 0.482 }
-    keywords = @{ x = 0.05; y = 0.25;  w = 0.90; h = 0.504 }
-    logos    = @{ x = 0.01; y = 0.412; w = 0.98; h = 0.549 }
-    date     = @{ x = 0.03; y = 0.445; w = 0.94; h = 0.526 }
-}
-$POSTER_CROP_HINT = '권장 크롭(이 기사 포스터에서 검증): crop 에 "poster:title"(제목), "poster:keywords"(주제어), "poster:logos"(기관 로고줄), "poster:date"(날짜와 장소) 중 하나를 쓰면 됩니다. 숫자를 쓰려면 title {x:0.07,y:0.02,w:0.86,h:0.482}, keywords {x:0.05,y:0.25,w:0.9,h:0.504}, logos {x:0.01,y:0.412,w:0.98,h:0.549}, date {x:0.03,y:0.445,w:0.94,h:0.526}. 이 점검의 기준값은 이 포스터에 맞춰져 있어 다른 이미지에서 잘못 걸리면 crop 을 조정해 통과시키세요.'
+# 이름 붙인 크롭("crop": "named:이름")은 그 사진과 같은 폴더의 crops.json 에서 찾는다. 사진마다 재서 적는 값이라(measure-image.ps1)
+# 이 렌더러에는 어떤 기사의 크롭 숫자도 들어 있지 않다. (예전 "poster:이름" 도 같은 방식으로 찾는다.)
+$POSTER_CROP_HINT = '크롭은 사진마다 다릅니다. measure-image.ps1 -Image <사진> 으로 이 사진을 재서 통과한 크롭 후보를 crops.json 에 적고 crop 에 "named:이름" 으로 쓰거나, crop 에 x,y,w,h 숫자를 직접 쓰세요. 이 점검은 어림 기준(휴리스틱)이라 잘못 걸린 것이 분명하면 그 조각에 "allow": {"caption_text": "이유"} 또는 {"edge_cut": "이유"} 를 적어 넘길 수 있습니다(이유는 필수이고 화면에 남습니다).'
+# 사진 조각 점검의 어림 기준값 (휴리스틱: 기사 포스터 2장과 사진 7장으로 확인했을 뿐이라 모든 사진에서 맞는다고 보장하지 않는다)
+$PIC_EDGE_DIFF = 40         # 이웃 칸과 밝기 차이가 이보다 크면 글자 가장자리로 센다
+$PIC_TEXT_EMPTY_ROWS = 0.30 # 가장자리가 거의 없는 줄이 이 비율 이상이면 "글자 포스터형", 미만이면 "사진형"(자막 영역과 가장자리 점검을 하지 않는다)
+$PIC_CAPTION_RATIO = 0.70   # 아래 25% 가장자리 밀도가 위 75%의 이 비율 이상이면 글자가 자막 영역에 몰린 것
+$PIC_CAPTION_MIN = 0.03     # 아래 25% 밀도가 이 값 미만이면 비어 있는 것으로 본다
+$PIC_SIDE_MAX = 0.03        # 크롭 좌우 가장자리 4열의 가장자리 밀도가 이보다 크면 글자가 잘렸을 가능성
 $SPOT_MAX_RUN = 3   # 기사에 이미지가 있으면 본문 highlight 조각은 연속 3개까지
+$FLAT_LEAD_RATIO = 2.4   # 기사 대표 이미지의 가로:세로가 이보다 크면(배너) 첫 조각용으로 쓰지 않는다(영상 영역 1.43:1 에 맞게 자를 수 없다)
 # drawtext의 y는 글자 윗부분 기준이라, y = 기준선 - max_glyph_a 로 둔다. render.py(SVG) 결과와 같은 높이가 되도록
 # 크기 100(제목)과 62(아래 안내)에서 잰 오차는 0-1px라 보정값은 0이다. 다른 빌드에서 어긋나면 이 값으로 조정한다.
 $BASELINE_SHIFT = 0.0
@@ -254,8 +256,17 @@ function Get-Crop($seg, [int]$n) {
     if ($v.x -lt 0 -or $v.y -lt 0 -or $v.x -ge 1 -or $v.y -ge 1) { Fail "조각 ${n}번: crop의 x, y는 0 이상 1 미만이어야 합니다." }
     if ($v.w -le 0 -or $v.h -le 0) { Fail "조각 ${n}번: crop의 w, h는 0보다 커야 합니다." }
     if ($v.x + $v.w -gt 1.0001 -or $v.y + $v.h -gt 1.0001) { Fail "조각 ${n}번: crop 영역이 사진 밖으로 나갑니다 (x+w와 y+h는 1 이하여야 합니다)." }
-    if ($v.w -lt 0.03 -or $v.h -lt 0.03) { Fail "조각 ${n}번: crop 영역이 너무 작습니다 (w, h는 0.03 이상으로 해 주세요)." }
-    $ratio = $v.w / $v.h
+    # 크기와 비율은 실제 픽셀로 본다: 아주 긴 기사 캡처(page.png)에서는 이미지 한 장이 전체 높이의 몇 %뿐이라 분수로 재면 잘못 걸린다.
+    $dimC = $null
+    if ($seg.PSObject.Properties["abs"] -and $seg.abs -and (Test-Path -LiteralPath $seg.abs)) { $dimC = Get-ImageSize $seg.abs }
+    if ($dimC) {
+        $pxw = $v.w * [double]$dimC[0]; $pxh = $v.h * [double]$dimC[1]
+        if ($pxw -lt 48 -or $pxh -lt 48) { Fail "조각 ${n}번: crop 영역이 너무 작습니다 (가로 세로 모두 48픽셀 이상이어야 합니다)." }
+        $ratio = $pxw / $pxh
+    } else {
+        if ($v.w -lt 0.03 -or $v.h -lt 0.03) { Fail "조각 ${n}번: crop 영역이 너무 작습니다 (w, h는 0.03 이상으로 해 주세요)." }
+        $ratio = $v.w / $v.h
+    }
     if ($ratio -gt 20 -or $ratio -lt 0.05) { Fail "조각 ${n}번: crop 영역의 가로와 세로 비율이 너무 극단적입니다 (w와 h의 차이를 줄여 주세요)." }
     return New-Object psobject -Property @{ x = $v.x; y = $v.y; w = $v.w; h = $v.h }
 }
@@ -369,18 +380,29 @@ function Resolve-PosterCrops($segs) {
         $seg = $segs[$i]; $n = $i + 1
         if (@("image", "highlight") -notcontains [string]$seg.type) { continue }
         $co = Get-Opt $seg "crop" $null
-        if ($co -is [string] -and $co -like "poster:*") {
-            # 이름 붙인 포스터 크롭: 이 기사(69410)의 포스터 img-NN.jpg(800x1000)에서 검증한 값. 숫자를 직접 쓰지 않아도 된다.
-            $nm = ([string]$co).Substring(7)
-            if (-not $POSTER_CROPS.Contains($nm)) { Fail ("조각 ${n}번: 포스터 크롭 이름 '$nm' 을 모릅니다. 쓸 수 있는 이름: " + (($POSTER_CROPS.Keys | ForEach-Object { "poster:$_" }) -join ", ")) }
-            if ((Split-Path -Leaf $seg.abs) -notlike "img-*") { Fail "조각 ${n}번: crop `"$co`" 는 기사 포스터 사진(img-01.jpg 같은 재료 폴더의 기사 이미지)에만 쓸 수 있습니다." }
-            $dimP = Get-ImageSize $seg.abs
-            if ($dimP -and [Math]::Abs($dimP[0] / [double]$dimP[1] - 0.8) -gt 0.05) { Fail "조각 ${n}번: crop `"$co`" 는 가로 세로 4:5 포스터(800x1000)용입니다. 이 사진은 $($dimP[0])x$($dimP[1]) 이라 직접 crop 숫자를 써 주세요." }
-            $v = $POSTER_CROPS[$nm]
-            $seg | Add-Member -MemberType NoteProperty -Name crop -Value ([pscustomobject]@{ x = $v.x; y = $v.y; w = $v.w; h = $v.h }) -Force
+        if ($co -is [string] -and ($co -like "poster:*" -or $co -like "named:*")) {
+            # 이름 붙인 크롭: 그 사진과 같은 폴더의 crops.json 에서 찾는다 (measure-image.ps1 -Write 가 만든다). 값은 사진마다 다르다.
+            $nm = ([string]$co).Substring(([string]$co).IndexOf(":") + 1)
+            $cjp = Join-Path (Split-Path -Parent $seg.abs) "crops.json"
+            $fileKey = Split-Path -Leaf $seg.abs
+            $hit = $null; $known = @()
+            if (Test-Path -LiteralPath $cjp) {
+                try { $cj = Get-Content -LiteralPath $cjp -Raw -Encoding UTF8 | ConvertFrom-Json } catch { Fail "조각 ${n}번: crops.json 을 읽지 못했습니다 ($cjp). JSON 형식을 확인해 주세요." }
+                $fe = $cj.PSObject.Properties[$fileKey]
+                if ($fe -and $fe.Value) {
+                    foreach ($pp in $fe.Value.PSObject.Properties) { $known += $pp.Name }
+                    if ($fe.Value.PSObject.Properties[$nm]) { $hit = $fe.Value.PSObject.Properties[$nm].Value }
+                }
+            }
+            if (-not $hit) {
+                $msg = "조각 ${n}번: 크롭 이름 '$nm' 이 이 사진($fileKey)의 crops.json 에 없습니다 (폴더: $(Split-Path -Parent $seg.abs))."
+                if ($known.Count -gt 0) { $msg += " 적혀 있는 이름: " + (($known | ForEach-Object { "named:$_" }) -join ", ") + "." } else { $msg += " 이 사진은 아직 측정해 적지 않았습니다." }
+                Fail ($msg + " 크롭은 사진마다 다릅니다. measure-image.ps1 -Image <사진> -Write 로 이 사진을 재서 crops.json 에 적거나, crop 에 x,y,w,h 숫자를 직접 쓰세요.")
+            }
+            $seg | Add-Member -MemberType NoteProperty -Name crop -Value ([pscustomobject]@{ x = [double]$hit.x; y = [double]$hit.y; w = [double]$hit.w; h = [double]$hit.h }) -Force
             continue
         }
-        if (-not ($co -is [string] -and $co -eq "poster")) { continue }
+        if (-not ($co -is [string] -and ($co -eq "poster" -or $co -eq "lead"))) { continue }
         $bj = Join-Path (Split-Path -Parent $seg.abs) "page-boxes.json"
         if ((Split-Path -Leaf $seg.abs) -ne "page.png" -or -not (Test-Path -LiteralPath $bj)) { Fail "조각 ${n}번: crop `"poster`" 는 capture-article.ps1 이 만든 page.png 와 page-boxes.json 이 있을 때만 쓸 수 있습니다." }
         $pb = Get-Content -LiteralPath $bj -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -390,7 +412,14 @@ function Resolve-PosterCrops($segs) {
         $iw = [double]$pb.image.w; $ih = [double]$pb.image.h
         # 포스터 위쪽에서 좌우 7% 여백을 두고(글자가 잘리지 않게) 제목 블록이 영역의 위쪽 75% 안에 오게 자른다
         $pw = [double]$b.w * 0.86
-        $hPx = [Math]::Min([double]$b.h * $ih * 0.98, $pw * $iw * $VIDEO_H / $VIDEO_W)
+        $needPx = $pw * $iw * $VIDEO_H / $VIDEO_W      # 영상 영역 비율(1080:756)에 맞는 크롭 높이(page.png 픽셀)
+        $imgPx = [double]$b.h * $ih                    # 기사 이미지 자체의 높이(page.png 픽셀)
+        $imgRatio = ([double]$b.w * $iw) / [Math]::Max(1.0, $imgPx)
+        if ($imgRatio -gt $FLAT_LEAD_RATIO) {
+            Fail ("조각 ${n}번: 이 기사의 대표 이미지는 가로:세로 {0}:1 로 너무 납작해 영상 영역(1.43:1)에 맞게 자를 수 없습니다. 대표 이미지 조각은 빼고 첫 조각을 첫 문장 highlight 로 하세요." -f $imgRatio.ToString("0.0", $inv))
+        }
+        # 이미지가 영상 영역 비율보다 낮으면(가로 사진) 이미지 높이만큼만 자르고 영상 영역 채우기(cover)가 양옆을 줄인다. 세로로 긴 이미지(포스터)는 위쪽에서 영상 영역 비율만큼 자른다.
+        $hPx = [Math]::Min($imgPx * 0.98, $needPx)
         $seg | Add-Member -MemberType NoteProperty -Name crop -Value ([pscustomobject]@{ x = [Math]::Round([double]$b.x + [double]$b.w * 0.07, 5); y = [Math]::Round([double]$b.y + [double]$b.h * 0.02, 5); w = [Math]::Round($pw, 5); h = [Math]::Round($hPx / $ih, 5) }) -Force
     }
 }
@@ -513,9 +542,12 @@ function Get-RegionRange([string]$img, $r, $dim) {
 }
 
 # 포스터 같은 사진 조각(박스 없는 image)이 영상 영역에 어떻게 보이는지 216x151 회색 그림으로 떠서 글자 가장자리(엣지) 밀도를 잰다.
-# 경고 1: 아래 25%(자막 영역)의 엣지 밀도가 위 75%의 70% 이상이면 중요한 글자가 자막 아래로 몰린 것이다.
-# 경고 2: 왼쪽/오른쪽 가장자리 4열에 엣지가 3% 넘게 있으면 글자가 크롭 가장자리에 걸쳐 잘렸을 가능성이 크다.
-# 걸리면 Test-Spec 이 멈춘다(안내에 권장 크롭 이름과 숫자가 있다). 세로 포스터 이미지 조각에만 쓰고, 영상 조각(video)과 가로 사진에는 쓰지 않는다.
+# 이것은 어림 측정(휴리스틱)이다. 기준값은 위쪽의 $PIC_* 상수이고, 기사 포스터 2장과 사진 7장으로만 확인했다.
+# 먼저 이 조각이 "글자 포스터형"인지 본다: 가장자리가 거의 없는 줄(여백 줄)이 $PIC_TEXT_EMPTY_ROWS 이상이면 글자 포스터형, 아니면 사진형이라 아래 두 점검을 하지 않는다(사진은 어디나 무늬가 있어 맞지 않는다).
+# 경고 1: 아래 25%(자막 영역)의 엣지 밀도가 위 75%의 $PIC_CAPTION_RATIO 배 이상이면 중요한 글자가 자막 아래로 몰린 것이다.
+# 경고 2: 왼쪽/오른쪽 가장자리 4열에 엣지가 $PIC_SIDE_MAX 넘게 있으면 글자가 크롭 가장자리에 걸쳐 잘렸을 가능성이 크다. 크롭이 사진 자체의 가장자리에 닿은 쪽은 사진이 거기서 끝나는 것이라 보지 않는다.
+# 걸리면 Test-Spec 이 멈춘다. 잘못 걸린 것이 분명하면 조각에 "allow": {"caption_text": "이유", "edge_cut": "이유"} 를 적어 넘긴다(이유 필수, 출력에 남는다).
+# 세로 포스터 이미지 조각에만 쓰고, 영상 조각(video)과 가로 사진에는 쓰지 않는다.
 function Test-PicPiece($seg, [int]$n) {
     $out = @()
     if ([string]$seg.type -ne "image") { return $out }
@@ -536,24 +568,46 @@ function Test-PicPiece($seg, [int]$n) {
         $b = [IO.File]::ReadAllBytes($tmp)
         if ($b.Length -lt ($W * $H)) { return $out }
         $cut = [int][Math]::Floor($H * 0.75)
-        $nTop = 0; $nBot = 0; $nL = 0; $nR = 0
+        $nTop = 0; $nBot = 0; $nL = 0; $nR = 0; $emptyRows = 0
         for ($y = 0; $y -lt $H; $y++) {
+            $rowE = 0
             for ($x = 0; $x -lt $W; $x++) {
                 $v = [int]$b[$y * $W + $x]
                 $e = $false
-                if ($x -lt $W - 1 -and [Math]::Abs([int]$b[$y * $W + $x + 1] - $v) -gt 40) { $e = $true }
-                elseif ($y -lt $H - 1 -and [Math]::Abs([int]$b[($y + 1) * $W + $x] - $v) -gt 40) { $e = $true }
+                if ($x -lt $W - 1 -and [Math]::Abs([int]$b[$y * $W + $x + 1] - $v) -gt $PIC_EDGE_DIFF) { $e = $true }
+                elseif ($y -lt $H - 1 -and [Math]::Abs([int]$b[($y + 1) * $W + $x] - $v) -gt $PIC_EDGE_DIFF) { $e = $true }
                 if ($e) {
+                    $rowE++
                     if ($y -lt $cut) { $nTop++ } else { $nBot++ }
                     if ($x -lt 4) { $nL++ }
                     if ($x -ge $W - 4) { $nR++ }
                 }
             }
+            if (($rowE / [double]$W) -lt 0.012) { $emptyRows++ }
         }
+        if (($emptyRows / [double]$H) -lt $PIC_TEXT_EMPTY_ROWS) { return $out }   # 사진형: 이 점검의 대상이 아니다
         $dTop = $nTop / [double]($cut * $W); $dBot = $nBot / [double](($H - $cut) * $W)
         $dL = $nL / [double](4 * $H); $dR = $nR / [double](4 * $H)
-        if ($dBot -ge 0.03 -and $dBot -ge 0.7 * $dTop) { $out += "조각 ${n}번: 영상 영역 아래쪽 25%(자막 영역)에 글자나 로고가 몰려 있어 자막이 덮습니다. 크롭을 위로 올려 중요한 글자가 영상 영역의 위쪽 75%에 오게 하세요. $POSTER_CROP_HINT" }
-        if ($dL -gt 0.03 -or $dR -gt 0.03) { $out += "조각 ${n}번: 크롭의 좌우 가장자리에 글자나 그림이 걸쳐 있어 잘렸습니다. 크롭의 좌우 여백을 늘리세요. $POSTER_CROP_HINT" }
+        if ($cx -le 0.005) { $dL = 0.0 }
+        if (($cx + $cw) -ge 0.995) { $dR = 0.0 }
+        $allow = Get-Opt $seg "allow" $null
+        function Allowed([string]$key) {
+            if ($null -eq $allow) { return $false }
+            $pr = $allow.PSObject.Properties[$key]
+            if ($null -eq $pr) { return $false }
+            $why = ([string]$pr.Value).Trim()
+            if ($why.Length -lt 4) { $script:allowProblems += "조각 ${n}번: allow.$key 에는 넘기는 이유를 4글자 이상 적어야 합니다."; return $true }
+            Say "허용: 조각 ${n}번 점검 '$key' 를 이유와 함께 넘깁니다 (이유: $why)"
+            return $true
+        }
+        $script:allowProblems = @()
+        if ($dBot -ge $PIC_CAPTION_MIN -and $dBot -ge $PIC_CAPTION_RATIO * $dTop) {
+            if (-not (Allowed "caption_text")) { $out += "조각 ${n}번: 영상 영역 아래쪽 25%(자막 영역)에 글자나 로고가 몰려 있어 자막이 덮습니다. 크롭을 위로 올려 중요한 글자가 영상 영역의 위쪽 75%에 오게 하세요. $POSTER_CROP_HINT" }
+        }
+        if ($dL -gt $PIC_SIDE_MAX -or $dR -gt $PIC_SIDE_MAX) {
+            if (-not (Allowed "edge_cut")) { $out += "조각 ${n}번: 크롭의 좌우 가장자리에 글자나 그림이 걸쳐 있어 잘렸습니다. 크롭의 좌우 여백을 늘리세요. $POSTER_CROP_HINT" }
+        }
+        $out += $script:allowProblems
     } finally { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }
     return $out
 }
@@ -997,13 +1051,14 @@ function Warn-FirstPoster($segs) {
     if ($im.Count -lt 1) { return }
     $c = Get-Crop $seg 1
     $b = $im[0].box
+    if ((([double]$b.w * [double]$pb.image.w) / [Math]::Max(1.0, [double]$b.h * [double]$pb.image.h)) -gt $FLAT_LEAD_RATIO) { return }   # 납작한 배너는 대표 이미지로 보지 않는다
     $ok = $false
     if ($c) {
         $ix = [Math]::Max([double]0, [Math]::Min([double]($c.x + $c.w), [double]($b.x + $b.w)) - [Math]::Max([double]$c.x, [double]$b.x))
         $iy = [Math]::Max([double]0, [Math]::Min([double]($c.y + $c.h), [double]($b.y + $b.h)) - [Math]::Max([double]$c.y, [double]$b.y))
         if ($c.w * $c.h -gt 0 -and ($ix * $iy) / ($c.w * $c.h) -ge 0.5) { $ok = $true }
     }
-    if (-not $ok) { Say "경고: 첫 조각이 기사의 포스터 그림이 아닙니다. 첫 컷은 포스터 그림이 보이게 하세요: {`"type`": `"image`", `"src`": `"재료/기사-<번호>/page.png`", `"crop`": `"poster`", `"duration`": 2.7}" }
+    if (-not $ok) { Say "경고: 첫 조각이 기사의 대표 이미지(맨 위 그림)가 아닙니다. 기사에 이미지가 있으면 첫 컷은 그 이미지가 보이게 하세요: {`"type`": `"image`", `"src`": `"재료/기사-<번호>/page.png`", `"crop`": `"poster`", `"duration`": 2.7}" }
 }
 Resolve-Sentences $segs   # sentence/quote 로 지정한 highlight 의 crop 과 box 를 page-boxes.json 에서 채운다
 Warn-FirstPoster $segs
@@ -1186,8 +1241,10 @@ if ($Check) {
         if (([string]$st.output) -ne (Split-Path -Leaf $out)) { $cp += "기록의 파일 이름($($st.output))과 spec의 output($((Split-Path -Leaf $out)))이 다릅니다." }
         if (([string]$st.file_sha256) -ne (Get-FileHash -LiteralPath $out -Algorithm SHA256).Hash.ToLower()) { $cp += "영상 파일이 render.ps1이 만든 뒤에 바뀌었습니다. render.ps1로 다시 만들어 주세요." }
         if (([string]$st.spec_sha256) -ne $specSha) { $cp += "spec.json이 마지막 렌더 뒤에 바뀌었습니다. render.ps1로 다시 만들어 주세요." }
-        $lu = Measure-Lufs $out
-        if ($null -eq $lu) { $cp += "영상의 음량을 읽지 못했습니다." }
+        $stSilent = $st.PSObject.Properties["silent_audio"] -and [bool]$st.silent_audio
+        $lu = $null; if (-not $stSilent) { $lu = Measure-Lufs $out }
+        if ($stSilent) { }
+        elseif ($null -eq $lu) { $cp += "영상의 음량을 읽지 못했습니다." }
         elseif ([Math]::Abs($lu - $target) -gt 1.5) { $cp += ("영상 음량이 {0:0.0} LUFS라 목표({1})에서 1.5 넘게 벗어납니다. 음량 정규화가 적용되지 않았습니다." -f $lu, $target) }
     }
     if ($cp.Count -gt 0) { Fail ("최종 영상 점검에서 멈췄습니다.`n  " + ($cp -join "`n  ")) }
@@ -1242,7 +1299,15 @@ try {
     if ($r1.Err -notmatch '\{[^{}]*"input_i"[^{}]*\}') { Fail ("loudnorm 측정값을 읽지 못했습니다.`n" + $r1.Err) }
     $m = $Matches[0] | ConvertFrom-Json
     Say ("1차 측정: 통합 {0} LUFS, 피크 {1} dBTP -> 목표 {2} LUFS" -f $m.input_i, $m.input_tp, $target)
-    $ln2 = "loudnorm=I=$(F $target):TP=$(F $peak):LRA=11:measured_I=$($m.input_i):measured_TP=$($m.input_tp):measured_LRA=$($m.input_lra):measured_thresh=$($m.input_thresh):offset=$($m.target_offset):linear=true"
+    # 말소리, 배경 음악, 효과음이 모두 없는 자막만 영상은 통합 음량이 -inf라 2차 loudnorm이 실패한다. 이때는 음량 맞추기를 건너뛴다.
+    $miVal = 0.0
+    $silentAudio = (-not [double]::TryParse([string]$m.input_i, [Globalization.NumberStyles]::Float, $inv, [ref]$miVal)) -or $miVal -le -70
+    if ($silentAudio) {
+        Say "소리가 없는 영상입니다(말소리, 배경 음악, 효과음 없음). 음량 맞추기를 건너뜁니다."
+        $ln2 = "anull"
+    } else {
+        $ln2 = "loudnorm=I=$(F $target):TP=$(F $peak):LRA=11:measured_I=$($m.input_i):measured_TP=$($m.input_tp):measured_LRA=$($m.input_lra):measured_thresh=$($m.input_thresh):offset=$($m.target_offset):linear=true"
+    }
 
     # 2차: 영상 + 소리
     $b = Build-Inputs $segs $audio $sfx $true ([bool]$bgmPath)
@@ -1316,13 +1381,19 @@ finally {
     if (-not $KeepTemp) { Remove-Item -LiteralPath $script:TMP -Recurse -Force -ErrorAction SilentlyContinue }
     else { Say "임시 폴더: $($script:TMP)" }
 }
-$lufsOut = Measure-Lufs $out
-if ($null -eq $lufsOut -or [Math]::Abs($lufsOut - $target) -gt 1.5) {
-    Fail ("만든 영상의 음량이 목표({0} LUFS)에서 1.5 넘게 벗어납니다 ({1}). 영상은 {2} 에 있지만 쓰지 마세요." -f $target, $lufsOut, $out)
+if ($silentAudio) {
+    $lufsOut = $null
+} else {
+    $lufsOut = Measure-Lufs $out
+    if ($null -eq $lufsOut -or [Math]::Abs($lufsOut - $target) -gt 1.5) {
+        Fail ("만든 영상의 음량이 목표({0} LUFS)에서 1.5 넘게 벗어납니다 ({1}). 영상은 {2} 에 있지만 쓰지 마세요." -f $target, $lufsOut, $out)
+    }
 }
-$stamp = [ordered]@{ output = (Split-Path -Leaf $out); file_sha256 = (Get-FileHash -LiteralPath $out -Algorithm SHA256).Hash.ToLower(); spec_sha256 = $specSha; lufs = [Math]::Round($lufsOut, 1); rendered_at = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss") }
+$lufsStamp = $null; if ($null -ne $lufsOut) { $lufsStamp = [Math]::Round($lufsOut, 1) }
+$stamp = [ordered]@{ output = (Split-Path -Leaf $out); file_sha256 = (Get-FileHash -LiteralPath $out -Algorithm SHA256).Hash.ToLower(); spec_sha256 = $specSha; lufs = $lufsStamp; silent_audio = [bool]$silentAudio; rendered_at = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss") }
 [IO.File]::WriteAllText($stampPath, ($stamp | ConvertTo-Json), $utf8)
-Say ("완료: {0} ({1:0.00}초, {2:0.0} LUFS)" -f $out, $total, $lufsOut)
+if ($silentAudio) { Say ("완료: {0} ({1:0.00}초, 소리 없음)" -f $out, $total) }
+else { Say ("완료: {0} ({1:0.00}초, {2:0.0} LUFS)" -f $out, $total, $lufsOut) }
 
 if (-not $NoOpen) {
     try {
