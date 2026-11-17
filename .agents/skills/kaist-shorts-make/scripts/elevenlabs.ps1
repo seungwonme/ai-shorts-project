@@ -292,4 +292,4 @@ Say ("나레이션을 만들었습니다: {0} ({1:0.0}초)" -f $narr, $t)
 Say ("이번에 쓴 크레딧: 최대 {0} (글자 수 기준 상한, 저장해 둔 소리를 다시 쓴 줄은 0. 실제 사용량은 ElevenLabs 사이트에서 확인)" -f $used)
 Say "줄별 시각(초): 사진 길이를 여기에 맞춥니다. 자막 후보(17자 안팎, 시각 어림값)도 narration.json의 captions에 있습니다."
 foreach ($e in $timeline) { Say ("  {0,2}. {1,6:0.00} - {2,6:0.00}  {3}" -f $e.index, $e.start, $e.end, $e.text) }
-Say "안내: ElevenLabs 무료 플랜 음성은 상업적 이용이 안 되고, 비상업으로 공개하려면 제목에 elevenlabs.io 또는 11.ai 표기가 필요합니다. KAIST 채널 게시에는 유료 플랜(상업 이용 허가)이 필요합니다. 자세한 조건은 시작하기.md와 AGENTS.md를 확인하세요."
+Say "안내: ElevenLabs 무료 플랜 음성은 상업적 이용이 안 되고, 비상업으로 공개하려면 제목에 elevenlabs.io 또는 11.ai 표기가 필요합니다. KAIST 채널 게시에는 유료 플랜(상업 이용 허가)이 필요합니다."
