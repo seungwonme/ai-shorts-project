@@ -6,8 +6,8 @@ Paths are relative to the spec folder or the project folder (the one that contai
 
 ```json
 {
-  "output": "결과/261118-딸기/shorts.mp4",
-  "title": [{"text": "20초 안에 읽어라", "color": "white"}, {"text": "딸기 잰말놀이", "color": "teal"}],
+  "output": "결과/<yymmdd>-<name>/shorts.mp4",
+  "title": [{"text": "<첫째 줄>", "color": "white"}, {"text": "<둘째 줄>", "color": "teal"}],
   "bottom_text": "↓ 풀영상은 KAIST 채널",
   "segments": [
     {"type": "video", "src": "재료/a.mp4", "in": 10.0, "out": 14.5},
@@ -36,4 +36,4 @@ Paths are relative to the spec folder or the project folder (the one that contai
 
 Timeline rule: segment i starts at (sum of earlier segment lengths) minus (sum of earlier transition_durations). The script prints these starts. Captions, sfx times and narration use the output timeline; narration always starts at 0 s, so make clips a little longer by the transition time to keep the same words visible.
 
-Examples (format references only): `examples/딸기파티.spec.json` (video clips with transitions, original sound; flow A) and `examples/상량식.spec.json` (article photos + Typecast narration + captions; flow B). They point at files that the collect scripts and `typecast.ps1` produce. Copy one to a result folder and change the paths and text.
+Finished specs: `examples/딸기파티.spec.json` (flow A) and `examples/기사캡처.spec.json` (flow B). Their paths and text belong to their source; write your own from your material.

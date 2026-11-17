@@ -28,7 +28,6 @@ What the script can and cannot tell about sound: it measures the whole sound onl
 |---|---|
 | a logo and title on top, a moving window, a note at the bottom (KAIST event short) | `references/example-kaist-event-frame.md` |
 | no fixed frame (full-picture video), a horizontal video, or a fixed header and footer on slides | `references/example-full-frame-and-other-layouts.md` |
-| the box or cut count looks wrong, or a heuristic must be changed | `../kaist-shorts-make/references/validation-set.md` |
 
 ## Step 1. Collect (script)
 

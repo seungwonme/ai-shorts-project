@@ -40,14 +40,13 @@ By step:
 | Flow B: choosing what each line shows (page capture + highlight, image crops, `text_card`), or a render stopped on a picture rule | `references/visual-distribution.md` |
 | A picture crop is needed for an article image | `scripts/measure-image.ps1`, explained in `references/visual-distribution.md` (crops are measured per image) |
 | A voice is needed, a Typecast/ElevenLabs key problem, voice credits or license questions | `references/narration.md` |
-| The approval message carried the photo supplement proposal (item 5) and the user said yes, or a `web-NN` photo exists | `references/web-photos.md` |
+| The user asked for web photos, or said yes to approval item 5 (photo supplement), or a `web-NN` photo exists | `references/web-photos.md` |
 | The logo, another logo file or `-NoLogo` comes up | `references/logo.md` |
 | Writing the title, bottom note, captions | `references/title-and-text.md` |
 | Writing or fixing `spec.json` fields | `references/spec-schema.md` (formats only: `examples/*.spec.json`) |
 | The user wants a transition | `references/transitions.md` |
 | The user mentions background music or sound effects | `references/audio-extras.md` |
 | Layout positions, sizes, colors of the KAIST frame | `references/TEMPLATE.md` (the only place the frame numbers are written, with their source) |
-| Changing a heuristic (frame detection, crop measurement, picture checks), or asking what was validated | `references/validation-set.md` |
 
 ## Invariants (always, in every flow)
 
@@ -67,5 +66,5 @@ By step:
 - `scripts/render.ps1`: the renderer (PowerShell 5.1 and 7). FFmpeg only, no Python.
 - `scripts/collect-video.ps1`, `scripts/collect-article.ps1`, `scripts/capture-article.ps1` (real page screenshot + sentence positions via the PC's Edge or Chrome), `scripts/measure-image.ps1` (measures one picture and proposes crops), `scripts/typecast.ps1`, `scripts/elevenlabs.ps1`, `scripts/openverse.ps1`, `scripts/common.ps1` (shared helpers).
 - `references/*.md`: the detail files above. `references/TEMPLATE.md`: measured KAIST layout.
-- `examples/*.spec.json`: format examples only. `examples/crops-69410.example.json`: data of one poster, copied only after checking that it fits (see `references/example-article-poster-69410.md`).
+- `examples/`: finished specs and crop data of the worked references. Their values belong to their source.
 - `assets/GmarketSansBold.otf` and `assets/GmarketSans-OFL.txt`: Gmarket Sans Bold with its license (SIL Open Font License 1.1, redistribution allowed with the license; sold-alone and renaming-after-modification are not). Keep both files together. `assets/gmarket-advances.json` holds glyph widths used for letter spacing. `assets/arrow-down.png` is the "↓" picture (the font lacks that glyph).

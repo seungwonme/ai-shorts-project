@@ -1,6 +1,6 @@
 # KAIST 공식 쇼츠 틀 (행사 쇼츠형)
 
-@KAISTofficial 2023 행사 쇼츠(솔직후기 `IyGoQWBCanQ`, 카포전 현장스케치 `NYiwcEkz4as`, 카포전 농구, 이도현, 축제)가 같은 틀을 쓴다. 2026-11-15에 1080x1920 원본 프레임에서 픽셀로 잰 값이다. 기준 프레임 사진(`reference-*.png`)은 이 프로젝트에 넣지 않았다.
+@KAISTofficial 행사 쇼츠(솔직후기 `IyGoQWBCanQ`, 카포전 현장스케치 `NYiwcEkz4as` 등)가 같은 틀을 쓴다. 1080x1920 원본 프레임에서 픽셀로 잰 값이다.
 
 이 표가 KAIST 틀 숫자의 정본(출처: 위 공식 쇼츠를 직접 잰 값)입니다. 다른 곳의 같은 숫자는 이 표를 옮겨 적은 것입니다: 렌더러 `scripts/render.ps1` 맨 위의 틀 상수, 분석 도구 `kaist-shorts-analyze/scripts/analyze.ps1` 의 `$KAIST_TEMPLATE_*`(화면 틀을 재지 못했을 때의 대체값으로만 씁니다). 숫자를 바꿀 때는 이 표와 그 두 곳을 같이 고칩니다. 지침(SKILL.md)에는 이 숫자를 적지 않습니다. 틀이 다른 영상에는 이 숫자를 쓰지 않고 영상마다 잽니다.
 
