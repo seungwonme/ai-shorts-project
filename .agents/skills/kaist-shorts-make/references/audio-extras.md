@@ -1,6 +1,6 @@
 # BGM and sound effects
 
-Read only when the user mentions background music or sound effects, or when the approval message has to list them. (Routing and invariants live in `../SKILL.md`; this file is the detail.)
+Read for every short (sound effects are added by default) and when the user mentions background music. (Routing and invariants live in `../SKILL.md`; this file is the detail.)
 
 ## BGM (optional, both flows)
 
@@ -18,7 +18,9 @@ You never search for, download, or pick music. The user picks it. 17 songs are p
 5. In `spec.json` add to `audio`: `"bgm": "재료/배경음.mp3"`. Optional: `"bgm_db"` (level against the speech, default -20), `"bgm_fade_in"` (seconds, default 1), `"bgm_fade_out"` (seconds, default 2). The song is looped when it is shorter than the video and cut when longer. Loudness stays at -19 LUFS for the whole mix.
 6. Credit line: if the license asks for a credit, add it to the credit line you give at the end.
 
-## Sound effects (optional, both flows)
+## Sound effects (added by default, both flows)
+
+Add a few sound effects to every short without being asked; leave them out only when the user says so. Start with the 4 preinstalled CC0 sounds in `재료/sfx/` (already approved, records in `재료/sfx/sources.json`): `whoosh-03.mp3` for a transition, `pop-10.mp3` when a highlight box appears, `ding-02.mp3` when a date piece appears, `click-03.mp3` when the sentence changes. If a moment needs a sound none of them fits, choose a short English word yourself (do not ask the user for one) and get it through steps 1-2 below; a newly downloaded sound needs the user's check (step 4) before it can be rendered, so ask for it in the approval message. Follow the spacing rule of step 5.
 
 Sound effects are found and downloaded **only through the audio path of `openverse.ps1`**. Never use web search, direct file addresses or any other site for sounds. BGM is separate: it stays human-chosen (the BGM part above).
 

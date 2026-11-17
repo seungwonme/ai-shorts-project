@@ -45,7 +45,7 @@ By step:
 | Writing the title, bottom note, captions | `references/title-and-text.md` |
 | Writing or fixing `spec.json` fields | `references/spec-schema.md` (formats only: `examples/*.spec.json`) |
 | The user wants a transition | `references/transitions.md` |
-| The user mentions background music or sound effects | `references/audio-extras.md` |
+| Every short (sound effects are added by default), and when the user mentions background music | `references/audio-extras.md` |
 | Layout positions, sizes, colors of the KAIST frame | `references/TEMPLATE.md` (the only place the frame numbers are written, with their source) |
 
 ## Invariants (always, in every flow)
