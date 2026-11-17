@@ -31,7 +31,7 @@ Paths are relative to the spec folder or the project folder (the one that contai
 | `sfx[]` | `file`, `at` (output seconds), `volume_db` (default -12; keep -12 to -20 so speech stays clear), optional `start`, `duration` (part of the file), `fade_in`, `fade_out` |
 | `subtitle_position` | where captions go: `inside` (default: bottom of the video area), `bar` (same place with a black translucent strip behind the text; an option the user may choose, not a recommendation), `below` (under the bottom note; the user's choice only, see "Visual distribution") |
 | `loudness` | `target` (default -19 LUFS), `true_peak` (default -1.5) |
-| `logo` | optional path to the logo picture. If omitted, `재료/logo.png` (or `logo.jpg`) is used. `false` means no logo. The official KAIST logo is NOT shipped with this project |
+| `logo` | optional path to the logo picture. If omitted, `재료/logo.png` (or `logo.jpg`) is used, and if that is missing the default KAIST logo of this skill (`assets/kaist-logo.png`). `false` means no logo (only when the user asks) |
 | `_...` keys | ignored (use for notes) |
 
 Timeline rule: segment i starts at (sum of earlier segment lengths) minus (sum of earlier transition_durations). The script prints these starts. Captions, sfx times and narration use the output timeline; narration always starts at 0 s, so make clips a little longer by the transition time to keep the same words visible.

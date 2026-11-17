@@ -41,7 +41,7 @@ By step:
 | A picture crop is needed for an article image | `scripts/measure-image.ps1`, explained in `references/visual-distribution.md` (crops are measured per image) |
 | A voice is needed, a Typecast/ElevenLabs key problem, voice credits or license questions | `references/narration.md` |
 | The approval message carried the photo supplement proposal (item 5) and the user said yes, or a `web-NN` photo exists | `references/web-photos.md` |
-| Before the first render of a project, or the logo / `-NoLogo` comes up | `references/logo.md` |
+| The logo, another logo file or `-NoLogo` comes up | `references/logo.md` |
 | Writing the title, bottom note, captions | `references/title-and-text.md` |
 | Writing or fixing `spec.json` fields | `references/spec-schema.md` (formats only: `examples/*.spec.json`) |
 | The user wants a transition | `references/transitions.md` |
@@ -58,7 +58,7 @@ By step:
 5. **Values belong to their source, not to these rules.** A crop, a box or a time is measured for the picture or video at hand (`measure-image.ps1` writes `재료/기사-<id>/crops.json`; `page-boxes.json` holds sentence positions) and is never copied from an example or from another article. Numbers in `examples/` are sample data of one article. Heuristic checks (the caption-zone and edge checks) are heuristics: adjust the crop first; skip one only with `allow` and a written reason, and tell the user.
 6. **Keys.** Never open, read, print, grep, copy, upload or commit `.env`, and never put a key into the chat, `spec.json`, `결과/`, `재료/` or any other file. Check keys only with `typecast.ps1 -Status` (it says found or missing, never the value). Never ask the user to paste a key into the chat. Details: `references/narration.md`.
 7. **Capture failure stops the flow.** If `capture-article.ps1` fails, do not switch to `text_card` and do not continue with other screens by yourself: tell the user in plain Korean and ask for the approval window (`references/flow-b-article.md`). Use `text_card` only when the user says in words that it may replace the capture.
-8. **Do not install software.** If FFmpeg, yt-dlp or Deno is missing, tell the user to run `setup-windows.bat` again. The KAIST logo is not shipped: see `references/logo.md`.
+8. **Do not install software.** If FFmpeg, yt-dlp or Deno is missing, tell the user to run `setup-windows.bat` again. The KAIST logo is added by default without asking: see `references/logo.md`.
 9. **Credit and checklist.** Give the credit line (`출처: KAIST 뉴스` or the `meta.json` credit and license text) and `credits.txt` for the video description, and finish with the review checklist from `AGENTS.md` (sources, faces, music/SFX/voice licenses, text approved). Never publish or upload.
 10. **If something fails, explain in one plain Korean sentence** and fix the spec (wrong path, in/out beyond the video length, missing file, missing logo).
 

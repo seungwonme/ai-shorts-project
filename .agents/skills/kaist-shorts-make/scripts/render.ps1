@@ -1012,7 +1012,7 @@ if ($major -ge 7) { $graphFlag = "-/filter_complex" }
 $skillRoot = Split-Path -Parent $PSScriptRoot
 $FONT = Join-Path $skillRoot "assets\GmarketSansBold.otf"
 $script:ARROW = Join-Path $skillRoot "assets\arrow-down.png"
-# 로고: KAIST 공식 로고 파일은 이 프로젝트에 들어 있지 않습니다. spec의 "logo"(경로), 없으면 재료 폴더의 logo.png 를 씁니다.
+# 로고: spec의 "logo"(경로), 없으면 재료 폴더의 logo.png, 그것도 없으면 스킬에 든 기본 KAIST 로고(assets\kaist-logo.png)를 씁니다. 묻지 않고 넣습니다.
 $LOGO_PAGE = "https://kaist.ac.kr/kr/html/kaist/010401.html"
 $script:LOGO = $null
 $logoOpt = Get-Opt $spec "logo" ""
@@ -1023,19 +1023,10 @@ if (-not $NoLogo -and -not $script:LOGO) {
         $cand = Join-Path (Join-Path $projectRoot "재료") $nm
         if (Test-Path -LiteralPath $cand) { $script:LOGO = $cand; break }
     }
-}
-if (-not $NoLogo -and -not $script:LOGO -and $Check) {
-    # -Check 는 영상을 만들지 않고 검사만 하므로 로고 파일이 없어도 멈추지 않는다.
-    Say "로고가 없어 이 검사에서는 건너뜁니다."
-}
-elseif (-not $NoLogo -and -not $script:LOGO) {
-    Fail ("KAIST 로고 파일이 없습니다. 공식 로고는 이 프로젝트에 들어 있지 않습니다.`n" +
-        "1) $LOGO_PAGE 에서 'KAIST 로고'를 내려받아(고해상도 파일은 KAIST 포털 로그인이 필요할 수 있습니다) 재료 폴더에 logo.png 로 저장해 주세요. 배경이 투명한 png가 가장 좋습니다.`n" +
-        "2) 로고 없이 만들어도 된다고 사용자가 정했다면 -NoLogo 를 붙여 다시 실행하세요.`n" +
-        "(KAIST 안내: 로고는 상업적 목적으로 쓸 수 없고, 교육 및 행정 목적에 한해 제공됩니다.)")
+    if (-not $script:LOGO) { $script:LOGO = Join-Path $skillRoot "assets\kaist-logo.png" }
 }
 foreach ($f in @($FONT, $script:ARROW)) { if (-not (Test-Path -LiteralPath $f)) { Fail "스킬 파일이 없습니다: $f" } }
-if ($script:LOGO -and -not (Test-Path -LiteralPath $script:LOGO)) { Fail "로고 파일을 찾지 못했습니다: $($script:LOGO)" }
+if ($script:LOGO -and -not (Test-Path -LiteralPath $script:LOGO)) { Fail "로고 파일을 찾지 못했습니다: $($script:LOGO) (기본 로고는 스킬의 assets\kaist-logo.png 입니다. 실습 폴더를 GitHub에서 다시 받아 주세요. KAIST UI 안내: $LOGO_PAGE)" }
 
 $segs = @($spec.segments)
 foreach ($seg in $segs) { if ($seg.type -ne "text_card") { Add-Member -InputObject $seg -NotePropertyName abs -NotePropertyValue (Resolve-Input $seg.src) -Force } }
