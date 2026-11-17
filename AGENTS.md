@@ -1,6 +1,6 @@
 # AI Shorts Project (student practice project)
 
-This folder is a practice project for a KAIST lecture. The user is a non-developer administrative staff member on a Windows 11 PC, using the Codex desktop app. Two repo-level skills live in `.agents/skills/`:
+This folder is a practice project for a KAIST lecture. The user is a non-developer administrative staff member on a Windows 10 or 11 PC, using the Codex desktop app. Two repo-level skills live in `.agents/skills/`:
 
 - `kaist-shorts-analyze`: analyze a reference short (YouTube URL or local mp4) into a plain-Korean "blueprint" report (`report.html`).
 - `kaist-shorts-make`: turn a plain request into `spec.json`, then render a 1080x1920 short in the KAIST event-short layout.
@@ -33,10 +33,10 @@ Tell the user, in one short checklist at the end of the final answer:
 
 1. Sources: facts, names, dates and numbers in the title and captions match the original KAIST sources.
 2. Faces (초상권): people who appear have agreed, or the footage is from an official public event you may use.
-2b. Page capture: if the short shows the captured article page (`page.png`), the video description carries the source line from `credits.txt` ("기사 화면 캡처: 출처: KAIST 뉴스, address, capture date"); the capture is a picture of the KAIST article page and is used only with its source shown.
-3. Music, sound effects and the Typecast voice: license and credit conditions are checked and recorded (title, creator, URL, license, download date). A free Typecast plan is for practice only; publishing on the KAIST channel needs a paid plan. The same holds for ElevenLabs: the free plan has no commercial license (publishing needs "elevenlabs.io" or "11.ai" in the title) and a paid plan is needed for the KAIST channel.
-4. Script text: the user has read and approved every line of the title, captions and narration.
-5. Web photos (Openverse search): Openverse passes on the license that the original site stated and does not verify it. For each photo the user has opened the original page (`source_page` in `sources.json`) and checked the license field and the creator, that the people shown agreed (초상권), and that no logo or character (cartoon, brand) is in the picture. Only CC0 and CC BY are usable; pictures under NC, ND, SA, no license, or with a logo or character are not used in a video that gets posted. CC BY photos need the credit line from `credits.txt` in the video description. Pictures that were not checked stay out of the short.
+3. Page capture: if the short shows the captured article page (`page.png`), the video description carries the source line from `credits.txt` ("기사 화면 캡처: 출처: KAIST 뉴스, address, capture date"); the capture is a picture of the KAIST article page and is used only with its source shown.
+4. Music, sound effects and the Typecast voice: license and credit conditions are checked and recorded (title, creator, URL, license, download date). A free Typecast plan is for practice only; publishing on the KAIST channel needs a paid plan. The same holds for ElevenLabs: the free plan has no commercial license (publishing needs "elevenlabs.io" or "11.ai" in the title) and a paid plan is needed for the KAIST channel.
+5. Script text: the user has read and approved every line of the title, captions and narration.
+6. Web photos (Openverse search): Openverse passes on the license that the original site stated and does not verify it. For each photo the user has opened the original page (`source_page` in `sources.json`) and checked the license field and the creator, that the people shown agreed (초상권), and that no logo or character (cartoon, brand) is in the picture. Only CC0 and CC BY are usable; pictures under NC, ND, SA, no license, or with a logo or character are not used in a video that gets posted. CC BY photos need the credit line from `credits.txt` in the video description. Pictures that were not checked stay out of the short.
 
 Do not publish for the user. Rendering a file on this PC is the end of your job.
 

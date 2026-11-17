@@ -3,7 +3,7 @@
 #   powershell -ExecutionPolicy Bypass -File render.ps1 -Spec 결과\날짜-이름\spec.json
 #
 # 필요한 것: FFmpeg(drawtext 포함 빌드, winget Gyan.FFmpeg.Essentials), 이 스킬의 assets 폴더(글꼴, 로고, 화살표).
-# 파이썬은 쓰지 않는다. spec.json 형식은 SKILL.md와 examples/ 를 본다.
+# 파이썬은 쓰지 않는다. spec.json 형식은 references/spec-schema.md 를 보고, 실제 예는 examples/ 에 있다.
 #
 # 이 파일은 UTF-8 (BOM 포함)으로 저장한다. PowerShell 5.1은 BOM이 없으면 한글을 깨뜨린다.
 param(
