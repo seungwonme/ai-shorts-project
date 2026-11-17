@@ -117,12 +117,24 @@ function Install-CodexApp {
 
 
 
+function Install-ChromeDevtools {
+  Step 'chrome-devtools'
+  if (Has-Command 'chrome-devtools') { Ok 'chrome-devtools installed'; return }
+  if (-not (Has-Command 'npm')) { Fail 'chrome-devtools (npm missing)'; return }
+  # Official package: https://github.com/ChromeDevTools/chrome-devtools-mcp
+  & npm install -g chrome-devtools-mcp@latest --no-fund --no-audit *>> $LogFile
+  Refresh-Path
+  if (Has-Command 'chrome-devtools') { Ok 'chrome-devtools installed' } else { Fail 'chrome-devtools' }
+}
+
 Refresh-Path
 
 Install-CodexApp
 Install-Winget -Label 'FFmpeg' -PackageId 'Gyan.FFmpeg.Essentials' -Command 'ffmpeg' -ExtraArgs @('--scope','user')
 Install-Winget -Label 'Deno' -PackageId 'DenoLand.Deno' -Command 'deno' -ExtraArgs @('--scope','user')
 Install-Winget -Label 'yt-dlp' -PackageId 'yt-dlp.yt-dlp' -Command 'yt-dlp' -ExtraArgs @('--scope','user','--skip-dependencies')
+Install-Winget -Label 'Node.js' -PackageId 'OpenJS.NodeJS.LTS' -Command 'node' -ExtraArgs @('--scope','user')
+Install-ChromeDevtools
 
 Write-Host ""
 Write-Host "Log: $LogFile"
